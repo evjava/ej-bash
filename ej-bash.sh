@@ -16,12 +16,8 @@ alias hig='history | grep'
 # https://stackoverflow.com/questions/34484582/how-to-check-which-branch-you-are-on-with-mercurial
 hg_ps1() { hg identify -b 2>/dev/null; }
 set_prompt() {
-    if [ "`git rev-parse --is-inside-work-tree 2>/dev/null`" = "true" ]; then
-        PS1="\n$(__git_ps1 ' (%s)')\n"
-    else
-        PS1="\n ($(hg_ps1))\n"
-    fi
-    PS1+="\u@\h:\w \\$ "
+    dt=`date +%H:%M`
+    PS1="\n$dt; $(__git_ps1)$(hg_ps1)\n\u@\h:\w \\$ "
 }
 shopt -s histappend
 PROMPT_COMMAND='history -a; history -c; history -r; set_prompt'
@@ -65,9 +61,12 @@ alias grh='git diff > ~/trash/backup_diff.diff && git reset --hard'
 alias gst='git status -s' 
 alias gull='git pull'
 alias gush='git push'
-alias sth="git stash"
+alias sth='git stash'
+alias pop='git stash pop'
 alias gmlb='git merge @{-1}'
-function gl () { git log -n $1 | cat; }
+alias gl='git log -n'
+alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
+alias gb='git branch'
 
 ## emacs
 alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (g \"/tmp/fi.diff\"))"'
@@ -88,3 +87,5 @@ alias count_group='sort | uniq -c | sort -n'
 alias group_count='sort | uniq -c | sort -n'
 alias sz='du -sch'
 alias pin='pip install'
+alias freh='free -h'
+alias wcl='wc -l'
