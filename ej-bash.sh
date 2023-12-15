@@ -79,7 +79,7 @@ addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
 fh() { free -h; }
 restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
 ask_yes_no() {
-    read -p "$1 (yes/no): " answer
+    read -p "$1 (yes/no (default)): " answer
     if [[ $answer == "yes" ]]; then
         return 0  # "yes" response
     else

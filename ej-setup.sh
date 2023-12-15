@@ -99,14 +99,15 @@ if ask_yes_no 'Update xdg-user-dirs?'; then
 fi
 
 if ask_yes_no 'Update ~/.gitconfig?'; then
-echo 'Updating ~/.gitconfig...'
-git_conf () { git config --global $1 $2; }
-git_conf core.editor "emacsclient"
-git_conf alias.st "status"
-git_conf alias.ci "commit"
-git_conf alias.co "checkout"
-git_conf alias.br "branch"
-# git_conf alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
+    echo 'Updating ~/.gitconfig...'
+    git_conf () { git config --global $1 $2; }
+    git_conf core.editor "emacsclient"
+    git_conf alias.st "status"
+    git_conf alias.ci "commit"
+    git_conf alias.co "checkout"
+    git_conf alias.br "branch"
+    # git_conf alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
+fi
 
 if ask_yes_no 'Fix ctrL:nocaps?'; then
     echo 'Fixing ctrl:nocaps...'
@@ -122,6 +123,5 @@ fi
 if ask_yes_no 'Fix keys?'; then
     . ej-setup-keys.sh
 fi
-
 
 echo 'Done!'
