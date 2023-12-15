@@ -7,8 +7,6 @@ shopt -s histappend # append to history, not overwrite
 HISTSIZE=-1; HISTFILESIZE=-1 # unlimited history
 shopt -s checkwinsize # check window size after each cmd
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)" # friendly less
-alias hi="history"
-alias hig='history | grep'
 
 ## prompt
 # http://stackoverflow.com/questions/4133904/ps1-line-with-git-current-branch-and-colors
@@ -80,6 +78,14 @@ fix_caps() { setxkbmap -option ctrl:nocaps; }
 addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
 fh() { free -h; }
 restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
+ask_yes_no() {
+    read -p "$1 (yes/no): " answer
+    if [[ $answer == "yes" ]]; then
+        return 0  # "yes" response
+    else
+        return 1  # "no" response
+    fi
+}
 
 ## etc
 alias pya='ping ya.ru'
@@ -89,3 +95,12 @@ alias sz='du -sch'
 alias pin='pip install'
 alias freh='free -h'
 alias wcl='wc -l'
+alias jn='jupyter notebook'
+alias flake8_files='flake8 --format="%(path)s" | group_count'
+alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
+alias hig='history | grep'
+alias hi="history"
+
+eval "$(thefuck --alias)"
+
+. /home/j/ej-bash/ej-bash-private.sh
