@@ -1,6 +1,10 @@
 . ej-bash.sh
 echo ". ~/ej-bash/ej-bash.sh" > ~/.bashrc
 
+if [  -f ~/ej-bash/ej-bash-private.sh ]; then
+    touch ~/ej-bash/ej-bash-private.sh
+fi
+
 setup_arg=$1
 
 function ask_yes_no() {

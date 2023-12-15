@@ -103,4 +103,4 @@ alias hi="history"
 
 eval "$(thefuck --alias)"
 
-. /home/j/ej-bash/ej-bash-private.sh
+. ~/ej-bash/ej-bash-private.sh
