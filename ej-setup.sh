@@ -51,14 +51,15 @@ function is-installed () {
 }
 
 if ask_yes_no 'Install some important dependencies?'; then
-    sai-if-not xdotool
     sai-if-not fd-find
-    sai-if-not wmctrl
-    sai-if-not syncthing
     sai-if-not htop
     sai-if-not ripgrep
-    sai-if-not ffmpeg
-    snap-if-not chromium
+    sai-if-not net-tools
+    # snap-if-not chromium
+    # sai-if-not syncthing
+    # sai-if-not wmctrl
+    # sai-if-not xdotool
+    # sai-if-not ffmpeg
 fi
 
 echo 'Installing links...'

@@ -78,6 +78,7 @@ fix_caps() { setxkbmap -option ctrl:nocaps; }
 addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
 fh() { free -h; }
 restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
+size() { du -sc $1 | awk '$2 == "total" {total += $1} END {print total}'; }
 ask_yes_no() {
     read -p "$1 (yes/no (default)): " answer
     if [[ $answer == "yes" ]]; then
@@ -95,6 +96,8 @@ alias sz='du -sch'
 alias pin='pip install'
 alias freh='free -h'
 alias wcl='wc -l'
+alias rgn='rg --no-ignore-vcs'
+alias fdn='fd --no-ignore-vcs'
 alias jn='jupyter notebook'
 alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
