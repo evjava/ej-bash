@@ -114,11 +114,11 @@ if ask_yes_no 'Update ~/.gitconfig?'; then
     # git_conf alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
 fi
 
-if ask_yes_no 'Fix ctrL:nocaps?'; then
+if ask_yes_no 'Fix ctrl:nocaps?'; then
     echo 'Fixing ctrl:nocaps...'
-    if [ -z $(cat /etc/default/keyboard | grep 'XKBOPTIONS="ctrl:nocaps"') ]; then
+    if [ -z $(cat /etc/default/keyboard | grep 'XKBOPTIONS' | grep 'ctrl:nocaps') ]; then
         echo '    Updating...'
-        sudo sed -i 's/XKBOPTIONS=""/XKBOPTIONS="ctrl:nocaps"/g' /etc/default/keyboard
+        sudo sed -i 's/XKBOPTIONS="[^"]*"/XKBOPTIONS="ctrl:nocaps"/' /etc/default/keyboard
         echo '    Done!'
     else
         echo '    Already installed!'
