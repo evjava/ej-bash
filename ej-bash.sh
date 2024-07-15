@@ -62,12 +62,14 @@ alias gush='git push'
 alias sth='git stash'
 alias pop='git stash pop'
 alias gmlb='git merge @{-1}'
+alias grlb='git rebase @{-1}'
 alias gl='git log -n'
+alias glo='git log --oneline -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
 
 ## emacs
-alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (g \"/tmp/fi.diff\"))"'
+alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (find-file-read-only \"/tmp/fi.diff\"))"'
 alias E="SUDO_EDITOR=\"emacsclient\" sudo -e"
 export SVN_EDITOR=emacsclient
 export EDITOR='emacsclient'
@@ -96,13 +98,14 @@ alias sz='du -sch'
 alias pin='pip install'
 alias freh='free -h'
 alias wcl='wc -l'
-alias rgn='rg --no-ignore-vcs'
 alias fdn='fd --no-ignore-vcs'
 alias jn='jupyter notebook'
 alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hig='history | grep'
 alias hi="history"
+alias rg='ripgrep --max-columns=500 --no-heading'
+alias rgn='ripgrep --max-columns=500 --no-heading --no-ignore-vcs'
 
 eval "$(thefuck --alias)"
 
