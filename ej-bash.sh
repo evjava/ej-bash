@@ -104,8 +104,8 @@ alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hig='history | grep'
 alias hi="history"
-alias rg='ripgrep --max-columns=500 --no-heading'
-alias rgn='ripgrep --max-columns=500 --no-heading --no-ignore-vcs'
+alias rg='/usr/bin/rg --max-columns=500 --no-heading'
+alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs'
 
 eval "$(thefuck --alias)"
 
