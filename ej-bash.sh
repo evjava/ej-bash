@@ -12,8 +12,8 @@ shopt -s checkwinsize # check window size after each cmd
 # http://stackoverflow.com/questions/4133904/ps1-line-with-git-current-branch-and-colors
 # https://askubuntu.com/questions/67283/is-it-possible-to-make-writing-to-bash-history-immediate
 # https://stackoverflow.com/questions/34484582/how-to-check-which-branch-you-are-on-with-mercurial
-hg_ps1() { hg identify -b 2>/dev/null; }
-set_prompt() {
+function hg_ps1() { hg identify -b 2>/dev/null; }
+function set_prompt() {
     dt=`date +%H:%M`
     PS1="\n$dt; $(__git_ps1)$(hg_ps1)\n\u@\h:\w \\$ "
 }
@@ -41,6 +41,46 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
+## some functions
+function klr () {  kill -9 `ps -e | grep $@ | tr -s ' ' | sed -n 1p | awk '{ print $1; }'`; }
+function fix_caps() { setxkbmap -option ctrl:nocaps; }
+function addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
+function fh() { free -h; }
+function restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
+function size() { du -sc $1 | awk '$2 == "total" {total += $1} END {print total}'; }
+function ask_yes_no() {
+    read -p "$1 (yes/no (default)): " answer
+    if [ $answer == "yes" ] | [ $answer == "y" ]; then
+        return 0  # "yes" response
+    else
+        return 1  # "no" response
+    fi
+}
+function sizes() {
+    dir=$1
+    if [ -z "$dir" ]; then
+        dir='.';
+    fi
+    du -d 1 -h -a "$dir" 2>/dev/null | sort -h
+}
+function load_if_exist() {
+    script_path=$1
+    if [ -f $script_path ]; then
+        . $script_path
+    else
+        echo 'Not found:' $script_path
+    fi
+}
+function pipcd() {
+    module=$1
+    init_path_cmd="import $module; print(${module}.__file__)"
+    echo "init_path_cmd:" $init_path_cmd
+    init_path=$(python -c "$init_path_cmd")
+    if [ ! -z $init_path ]; then
+        cd $(dirname $init_path)
+    fi
+}
+
 ## apt aliases
 alias ase="apt-cache search"
 alias sai="sudo apt install -y"
@@ -65,6 +105,7 @@ alias gmlb='git merge @{-1}'
 alias grlb='git rebase @{-1}'
 alias gl='git log -n'
 alias glo='git log --oneline -n'
+alias glod='git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
 
@@ -73,22 +114,6 @@ alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (find-f
 alias E="SUDO_EDITOR=\"emacsclient\" sudo -e"
 export SVN_EDITOR=emacsclient
 export EDITOR='emacsclient'
-
-## some functions
-klr () {  kill -9 `ps -e | grep $@ | tr -s ' ' | sed -n 1p | awk '{ print $1; }'`; }
-fix_caps() { setxkbmap -option ctrl:nocaps; }
-addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
-fh() { free -h; }
-restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
-size() { du -sc $1 | awk '$2 == "total" {total += $1} END {print total}'; }
-ask_yes_no() {
-    read -p "$1 (yes/no (default)): " answer
-    if [[ $answer == "yes" ]]; then
-        return 0  # "yes" response
-    else
-        return 1  # "no" response
-    fi
-}
 
 ## etc
 alias pya='ping ya.ru'
@@ -104,9 +129,15 @@ alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hig='history | grep'
 alias hi="history"
-alias rg='ripgrep --max-columns=500 --no-heading'
-alias rgn='ripgrep --max-columns=500 --no-heading --no-ignore-vcs'
+alias rg='/usr/bin/rg --max-columns=500 --no-heading'
+alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs'
+alias jsonp='python -m json.tool --no-ensure-ascii'
+alias doc='docker compose'
+alias c1='piep "p.split()[0]"'
+alias summate='paste -sd+ | bc'
 
+## loading config with paths
+load_if_exist ~/ej-bash/ej-bash-local.sh
+
+## loading tools depending on paths
 eval "$(thefuck --alias)"
-
-. ~/ej-bash/ej-bash-private.sh

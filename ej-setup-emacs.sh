@@ -1,5 +1,5 @@
 # emacs-29
-emacs_dir='emacs-29.2'
+emacs_dir='emacs-29.4'
 
 cd /tmp
 if ! test -f $emacs_dir.tar.gz; then
@@ -25,13 +25,8 @@ sudo apt install -y \
      libm17n-dev \
      libmagickcore-dev \
      libgtk-3-dev \
-     libwebkit2gtk-4.0-dev \
      libncurses-dev \
-     libgnutls30 \
-     libwebkit2gtk-4.1-dev \
      giflib-tools \
-     libgif \
-     libgif-dev \
      libgnutls28-dev \
      libtree-sitter-dev \
      libjansson4 \
@@ -39,7 +34,7 @@ sudo apt install -y \
      imagemagick-6.q16hdri \
      dvipng
 
-CC='gcc-10" ./autogen.sh
+CC="gcc-10" ./autogen.sh
 # mmap not supported yet...
 CC="gcc-10" ./configure  --with-mailutils --with-imagemagick --with-xwidgets --with-native-compilation --with-libsystemd --with-x-toolkit=gtk3 --with-gconf --with-gpm --with-m17n-flt --with-libotf --with-xft
 
