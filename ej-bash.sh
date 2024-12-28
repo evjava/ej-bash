@@ -74,11 +74,33 @@ function load_if_exist() {
 function pipcd() {
     module=$1
     init_path_cmd="import $module; print(${module}.__file__)"
-    echo "init_path_cmd:" $init_path_cmd
     init_path=$(python -c "$init_path_cmd")
     if [ ! -z $init_path ]; then
         cd $(dirname $init_path)
     fi
+}
+
+function hig() {
+    if [[ $# == 0 ]]; then
+        echo "Usage: hig <pattern1> [<pattern2> ...]" >&2
+        return 1
+    fi
+    local cmd="history"
+    local cnt="10"
+    while (( "$#" )); do
+        case $1 in
+            -n)
+                shift;
+                cnt="$1"
+                ;;
+            *)
+                cmd="$cmd | grep '$1'"
+                ;;
+        esac
+        shift
+    done
+    cmd="$cmd | awk '!seen[substr(\$0, index(\$0, \$2))]++' | tail -n $cnt"
+    eval "$cmd"
 }
 
 ## apt aliases
@@ -127,7 +149,6 @@ alias fdn='fd --no-ignore-vcs'
 alias jn='jupyter notebook'
 alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
-alias hig='history | grep'
 alias hi="history"
 alias rg='/usr/bin/rg --max-columns=500 --no-heading'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs'
