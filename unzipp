@@ -1,0 +1,10 @@
+#!/bin/bash
+archive="$1"
+has_parent=$(unzip -l "$archive" | tail -n+4 | head -n-2 | awk '{split($NF,a,"/");print a[1]}' | sort -u | wc -l)
+if test "$has_parent" -eq 1; then
+  unzip $archive
+else
+  dir="./$(basename ${archive%%.zip})"
+  mkdir "$dir"
+  unzip -d "$dir" $archive
+fi

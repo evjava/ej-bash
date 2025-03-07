@@ -94,7 +94,8 @@ function hig() {
                 cnt="$1"
                 ;;
             *)
-                cmd="$cmd | grep '$1'"
+                pattern=$(echo "$1" | sed 's/\W/\\&/g')
+                cmd="$cmd | grep '$pattern'"
                 ;;
         esac
         shift
@@ -130,6 +131,7 @@ alias glo='git log --oneline -n'
 alias glod='git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
+alias gcb='git co -b'
 
 ## emacs
 alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (find-file-read-only \"/tmp/fi.diff\"))"'
@@ -150,12 +152,14 @@ alias jn='jupyter notebook'
 alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
+alias m='make'
 alias rg='/usr/bin/rg --max-columns=500 --no-heading'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs'
 alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'
 alias c1='piep "p.split()[0]"'
 alias summate='paste -sd+ | bc'
+alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
 
 ## loading config with paths
 load_if_exist ~/ej-bash/ej-bash-local.sh
