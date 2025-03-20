@@ -14,10 +14,18 @@ shopt -s checkwinsize # check window size after each cmd
 # http://stackoverflow.com/questions/4133904/ps1-line-with-git-current-branch-and-colors
 # https://askubuntu.com/questions/67283/is-it-possible-to-make-writing-to-bash-history-immediate
 # https://stackoverflow.com/questions/34484582/how-to-check-which-branch-you-are-on-with-mercurial
+function get_hostname_pretty() {
+    local res=$(hostnamectl --pretty);
+    if [[ -z $res ]]; then
+        res=hostname
+    fi
+    echo $res
+}
+HOSTNAME_PRETTY=$(get_hostname_pretty)
 function hg_ps1() { hg identify -b 2>/dev/null; }
 function set_prompt() {
     dt=`date +%H:%M`
-    PS1="\n$dt; $(__git_ps1)$(hg_ps1)\n\u@\h:\w \\$ "
+    PS1="\n$dt; $(__git_ps1)$(hg_ps1)\n\u@$HOSTNAME_PRETTY:\w \\$ "
 }
 shopt -s histappend
 PROMPT_COMMAND='history -a; history -c; history -r; set_prompt'
@@ -66,7 +74,7 @@ function load_if_exist() {
     fi
 }
 function pipcd() {
-    module=$1
+    module="{1//-/_}"
     init_path_cmd="import $module; print(${module}.__file__)"
     init_path=$(python -c "$init_path_cmd")
     if [ ! -z $init_path ]; then
@@ -97,8 +105,37 @@ function hig() {
     cmd="$cmd | awk '!seen[substr(\$0, index(\$0, \$2))]++' | tail -n $cnt"
     eval "$cmd"
 }
+
 function logout () {
     xfce4-session-logout --logout
+}
+
+function dot-png() {
+    local dot_path="$1"
+    local extra="$2"
+    local png_path="${dot_path%.dot}.png"
+    if [[ ! -f "$dot_path" ]]; then
+        echo "DOT file '$dot_path' not found."
+        return 1
+    fi
+    if [ "$extra" != "--cycle" ]; then
+        dot -Tpng "$dot_path" -o "$png_path"
+        echo "Generated $png_path"
+        return 0
+    fi
+    echo "Running in cycle-mode"
+    last_modified_dot=""
+    while true; do
+        sleep 1
+        current_modified_dot=$(stat -c %Y "$dot_path")
+        if [[ "$current_modified_dot" != "$last_modified_dot" ]]; then
+            echo "File changed at $(date), regenerating PNG: $png_path"
+            dot -Tpng "$dot_path" -o "$png_path"
+            last_modified_dot=$current_modified_dot
+        else
+            echo "No changes detected."
+        fi
+    done
 }
 
 ## apt aliases
@@ -118,7 +155,8 @@ alias gd='git diff'
 alias gds='git diff --staged'
 alias gde='git diff | ema'
 alias grh='git diff > ~/trash/backup_diff.diff && git reset --hard'
-alias gst='git status -s' 
+alias gst='git status -s'
+alias gsti='gst --ignore-submodules'
 alias gull='git pull'
 alias gush='git push'
 alias sth='git stash'
@@ -153,19 +191,19 @@ alias sz='du -sch'
 alias pin='pip install'
 alias freh='free -h'
 alias wcl='wc -l'
-alias fdn='fd --no-ignore-vcs'
+alias fdn='fd --no-ignore-vcs --hidden'
 alias jn='jupyter notebook'
 alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
 alias rg='/usr/bin/rg --max-columns=500 --no-heading'
-alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs'
+alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs  --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'
 alias c1='piep "p.split()[0]"'
 alias summate='paste -sd+ | bc'
-alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
+alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
 alias reversed='tac'
 alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
 
@@ -174,11 +212,6 @@ if [ -d "$HOME/.local/bin" ]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 export RIPGREP_CONFIG_PATH="$SCRIPT_DIR/.ripgreprc"
-
-## paths
-if [ -d "$HOME/.local/bin" ]; then
-    export PATH="$HOME/.local/bin:$PATH"
-fi
 
 ## loading config with paths
 load_if_exist $LOCAL_SCRIPT_PATH
