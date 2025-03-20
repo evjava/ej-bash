@@ -114,6 +114,8 @@ alias mk='mkdir'
 alias fd='fdfind'
 
 ## git
+alias gd='git diff'
+alias gds='git diff --staged'
 alias gde='git diff | ema'
 alias grh='git diff > ~/trash/backup_diff.diff && git reset --hard'
 alias gst='git status -s' 
@@ -123,12 +125,19 @@ alias sth='git stash'
 alias pop='git stash pop'
 alias gmlb='git merge @{-1}'
 alias grlb='git rebase @{-1}'
-alias gl='git log -n'
 alias glo='git log --oneline -n'
-alias glod='git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n'
+alias glod='git log -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
 alias gcb='git co -b'
+alias grh1='git reset HEAD~1'
+function gl () {
+    cnt="$1"
+    if [ -z "$cnt" ]; then
+        cnt=10
+    fi
+    git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n "$cnt"
+}
 
 ## emacs
 alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (find-file-read-only \"/tmp/fi.diff\"))"'
@@ -172,7 +181,4 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 
 ## loading config with paths
-load_if_exist $local_script_path
-
-## loading tools depending on paths
-eval "$(thefuck --alias)"
+load_if_exist $LOCAL_SCRIPT_PATH

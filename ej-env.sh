@@ -1,6 +1,6 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-main_script_path=$SCRIPT_DIR/ej-bash.sh
-local_script_path=$SCRIPT_DIR/ej-bash-local.sh
+MAIN_SCRIPT_PATH=$SCRIPT_DIR/ej-bash.sh
+LOCAL_SCRIPT_PATH=$SCRIPT_DIR/ej-bash-local.sh
 
 function ask_yes_no() {
     msg=$1
