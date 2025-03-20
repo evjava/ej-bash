@@ -16,6 +16,7 @@ shopt -s checkwinsize # check window size after each cmd
 # https://stackoverflow.com/questions/34484582/how-to-check-which-branch-you-are-on-with-mercurial
 function get_hostname_pretty() {
     local res=$(hostnamectl --pretty);
+    # set pretty hostname with `sudo hostnamectl set-hostname --pretty "<pretty-hostname>"`
     if [[ -z $res ]]; then
         res=hostname
     fi
@@ -198,7 +199,7 @@ alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
 alias rg='/usr/bin/rg --max-columns=500 --no-heading'
-alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs  --hidden'
+alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'
 alias c1='piep "p.split()[0]"'
