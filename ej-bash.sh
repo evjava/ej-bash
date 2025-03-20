@@ -166,8 +166,13 @@ if [ -d "$HOME/.local/bin" ]; then
 fi
 export RIPGREP_CONFIG_PATH="$SCRIPT_DIR/.ripgreprc"
 
+## paths
+if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+
 ## loading config with paths
-load_if_exist ~/ej-bash/ej-bash-local.sh
+load_if_exist $local_script_path
 
 ## loading tools depending on paths
 eval "$(thefuck --alias)"
