@@ -1,0 +1,11 @@
+--type-add
+el:*.el*
+
+--type-add
+kts:*.kts*
+
+--type-add
+kt:*.kt*
+
+--type-add
+proto:*.proto*

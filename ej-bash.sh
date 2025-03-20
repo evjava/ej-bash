@@ -1,5 +1,7 @@
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+. $SCRIPT_DIR/ej-env.sh
 [ -z "$PS1" ] && return # return if not interactive
-function rel () { . ~/.bashrc; echo 'Config reloaded!'; }
+function rel () { . "$HOME/.bashrc"; echo 'Config reloaded!'; }
 
 ## history
 HISTCONTROL=ignoredups:ignorespace # no dups in history
@@ -37,7 +39,7 @@ fi
 export LS_COLORS="no=00:fi=00:di=00;36:ln=00;36:pi=40;33:so=00;35:bd=40;33;01:ex=00;35"
 
 ## completions
-if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
+if test -f /etc/bash_completion && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
 
@@ -48,14 +50,6 @@ function addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
 function fh() { free -h; }
 function restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
 function size() { du -sc $1 | awk '$2 == "total" {total += $1} END {print total}'; }
-function ask_yes_no() {
-    read -p "$1 (yes/no (default)): " answer
-    if [ $answer == "yes" ] | [ $answer == "y" ]; then
-        return 0  # "yes" response
-    else
-        return 1  # "no" response
-    fi
-}
 function sizes() {
     dir=$1
     if [ -z "$dir" ]; then
@@ -65,7 +59,7 @@ function sizes() {
 }
 function load_if_exist() {
     script_path=$1
-    if [ -f $script_path ]; then
+    if test -f $script_path; then
         . $script_path
     else
         echo 'Not found:' $script_path
@@ -102,6 +96,9 @@ function hig() {
     done
     cmd="$cmd | awk '!seen[substr(\$0, index(\$0, \$2))]++' | tail -n $cnt"
     eval "$cmd"
+}
+function logout () {
+    xfce4-session-logout --logout
 }
 
 ## apt aliases
@@ -160,6 +157,14 @@ alias doc='docker compose'
 alias c1='piep "p.split()[0]"'
 alias summate='paste -sd+ | bc'
 alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"'
+alias reversed='tac'
+alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
+
+## paths
+if [ -d "$HOME/.local/bin" ]; then
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+export RIPGREP_CONFIG_PATH="$SCRIPT_DIR/.ripgreprc"
 
 ## loading config with paths
 load_if_exist ~/ej-bash/ej-bash-local.sh
