@@ -18,7 +18,7 @@ function get_hostname_pretty() {
     local res=$(hostnamectl --pretty);
     # set pretty hostname with `sudo hostnamectl set-hostname --pretty "<pretty-hostname>"`
     if [[ -z $res ]]; then
-        res=hostname
+        res=$(hostname)
     fi
     echo $res
 }
