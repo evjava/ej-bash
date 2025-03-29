@@ -1,26 +1,12 @@
 . ej-bash.sh
-echo ". ~/ej-bash/ej-bash.sh" > ~/.bashrc
+. ej-env.sh
+echo ". $SCRIPT_DIR/ej-bash.sh" > ~/.bashrc
 
-if [ ! -f ~/ej-bash/ej-bash-private.sh ]; then
-    touch ~/ej-bash/ej-bash-private.sh
+if ! test -f $LOCAL_SCRIPT_PATH; then
+    touch $LOCAL_SCRIPT_PATH
 fi
 
 setup_arg=$1
-
-function ask_yes_no() {
-    if [[ $setup_arg == "yes" ]]; then
-        return 0
-    fi
-
-    read -p "$1 (yes/no (default)): " answer
-    if [[ $answer == "yes" ]]; then
-        return 0  # "yes" response
-    else
-        return 1  # "no" response
-    fi
-}
-
-. ej-bash.sh
 
 echo 'Installing programs...'
 function sai-if-not () {
@@ -85,6 +71,8 @@ function snap-link-if-no () {
         echo '    ' link '<' $to '>' already exists!
     fi
 }
+
+ln -s "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
 if ask_yes_no 'Install links?'; then
     link-if-no /usr/bin/xfce4-keyboard-settings /usr/bin/kbs
     link-if-no /usr/bin/firefox                 /usr/bin/ffox
