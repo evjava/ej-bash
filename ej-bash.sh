@@ -75,7 +75,7 @@ function load_if_exist() {
     fi
 }
 function pipcd() {
-    module="{1//-/_}"
+    module="${1//-/_}"
     init_path_cmd="import $module; print(${module}.__file__)"
     init_path=$(python -c "$init_path_cmd")
     if [ ! -z $init_path ]; then
@@ -170,6 +170,8 @@ alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
 alias gcb='git co -b'
 alias grh1='git reset HEAD~1'
+alias grh2='git reset HEAD~2'
+alias grh3='git reset HEAD~3'
 function gl () {
     cnt="$1"
     if [ -z "$cnt" ]; then
@@ -202,11 +204,12 @@ alias rg='/usr/bin/rg --max-columns=500 --no-heading'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'
-alias c1='piep "p.split()[0]"'
 alias summate='paste -sd+ | bc'
 alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
 alias reversed='tac'
 alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
+alias c1='piep "p.split()[0]"'
+alias c2='piep "p.split()[1]"'
 
 ## paths
 if [ -d "$HOME/.local/bin" ]; then
