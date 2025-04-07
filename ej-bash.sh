@@ -173,6 +173,7 @@ alias glod='git log -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
 alias gcb='git co -b'
+alias gc-='git co -'
 alias grh1='git reset HEAD~1'
 alias grh2='git reset HEAD~2'
 alias grh3='git reset HEAD~3'
