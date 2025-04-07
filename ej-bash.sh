@@ -115,12 +115,15 @@ function dot-png() {
     local dot_path="$1"
     local extra="$2"
     local png_path="${dot_path%.dot}.png"
+    local tmp_png_path="/tmp/$(basename "${png_path}")"
+
     if [[ ! -f "$dot_path" ]]; then
         echo "DOT file '$dot_path' not found."
         return 1
     fi
     if [ "$extra" != "--cycle" ]; then
-        dot -Tpng "$dot_path" -o "$png_path"
+        dot -Tpng "$dot_path" -o "$tmp_png_path"
+        cp "$tmp_png_path" "$png_path"
         echo "Generated $png_path"
         return 0
     fi
@@ -131,7 +134,8 @@ function dot-png() {
         current_modified_dot=$(stat -c %Y "$dot_path")
         if [[ "$current_modified_dot" != "$last_modified_dot" ]]; then
             echo "File changed at $(date), regenerating PNG: $png_path"
-            dot -Tpng "$dot_path" -o "$png_path"
+            dot -Tpng "$dot_path" -o "$tmp_png_path"
+            cp "$tmp_png_path" "$png_path"
             last_modified_dot=$current_modified_dot
         else
             echo "No changes detected."
@@ -149,7 +153,7 @@ alias sar="sudo apt-get remove"
 alias l="ls -agGp --color --time-style=long-iso"
 alias rm='rm -i'
 alias mk='mkdir'
-alias fd='fdfind'
+alias fd='fdfind --follow'
 
 ## git
 alias gd='git diff'
@@ -206,6 +210,7 @@ alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'
 alias summate='paste -sd+ | bc'
 alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
+function docker-stop-rm() { cid=$1; docker stop $cid; docker rm $cid; }
 alias reversed='tac'
 alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
 alias c1='piep "p.split()[0]"'
