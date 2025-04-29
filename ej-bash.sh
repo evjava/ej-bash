@@ -143,6 +143,22 @@ function dot-png() {
     done
 }
 
+function wait-until-changed () {
+    cmd="$1"
+    echo "cmd: $cmd"
+    val=$(eval "$cmd")
+    echo "Value: $val"
+    while true; do
+        sleep 3
+        val_upd=$(eval "$cmd")
+        if [ "$val" != "$val_upd" ]; then
+            echo "Value changed: $val -> $val_upd"
+            return 0
+        fi
+        echo "Value still $val"
+    done
+}
+
 ## apt aliases
 alias ase="apt-cache search"
 alias sai="sudo apt install -y"
@@ -166,12 +182,13 @@ alias gull='git pull'
 alias gush='git push'
 alias sth='git stash'
 alias pop='git stash pop'
-alias gmlb='git merge @{-1}'
+alias gmlb='git merge @{-1} --no-edit'
 alias grlb='git rebase @{-1}'
 alias glo='git log --oneline -n'
 alias glod='git log -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
+alias gbr='git branch --remote'
 alias gcb='git co -b'
 alias gc-='git co -'
 alias grh1='git reset HEAD~1'
@@ -179,10 +196,11 @@ alias grh2='git reset HEAD~2'
 alias grh3='git reset HEAD~3'
 function gl () {
     cnt="$1"
+    branch="$2"
     if [ -z "$cnt" ]; then
         cnt=10
     fi
-    git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n "$cnt"
+    git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n "$cnt" $branch
 }
 
 ## emacs
@@ -216,6 +234,7 @@ alias reversed='tac'
 alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
 alias c1='piep "p.split()[0]"'
 alias c2='piep "p.split()[1]"'
+function port() { port=$1; sudo netstat --all --program | grep ":$port"; }
 
 ## paths
 if [ -d "$HOME/.local/bin" ]; then
