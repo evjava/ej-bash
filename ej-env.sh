@@ -6,7 +6,7 @@ function ask_yes_no() {
     msg=$1
     force_arg=$2
     if [[ $force_arg == "--force" ]]; then
-        return 0
+        return 0  # "yes" resposne
     fi
 
     read -p "$msg (yes/no (default)): " answer

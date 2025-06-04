@@ -1,14 +1,8 @@
 . ej-bash.sh
 . ej-env.sh
 echo ". $SCRIPT_DIR/ej-bash.sh" > ~/.bashrc
+if ! test -f $LOCAL_SCRIPT_PATH; then touch $LOCAL_SCRIPT_PATH; fi
 
-if ! test -f $LOCAL_SCRIPT_PATH; then
-    touch $LOCAL_SCRIPT_PATH
-fi
-
-setup_arg=$1
-
-echo 'Installing programs...'
 function sai-if-not () {
     program=$1;
     if [[ -z $(dpkg -s "$program")  ]]; then
@@ -25,34 +19,9 @@ function snap-if-not () {
         echo '    ' Program '<' $program '>' already installed!
     fi
 }
-
-# todo fix, use it
-function is-installed () {
-    program=$1;
-    if [[ -z $(snap list "$program" 2>/dev/null) && -z $(dpkg -s "$program" 2>/dev/null) ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-if ask_yes_no 'Install some important dependencies?'; then
-    sai-if-not fd-find
-    sai-if-not htop
-    sai-if-not ripgrep
-    sai-if-not net-tools
-    # snap-if-not chromium
-    # sai-if-not syncthing
-    # sai-if-not wmctrl
-    # sai-if-not xdotool
-    # sai-if-not ffmpeg
-fi
-
-echo 'Installing links...'
 function link-if-no () {
     from=$1
     to=$2
-
     if [ ! -f $to ]; then
         echo '    Running: $' sudo ln -s $from $to 
         sudo ln -s $from $to 
@@ -63,7 +32,6 @@ function link-if-no () {
 function snap-link-if-no () {
     from=$1
     to=$2
-
     if [ -z $(which $to) ]; then
         echo 'Running: $' sudo snap alias $1 $2
         sudo snap alias $1 $2
@@ -71,15 +39,26 @@ function snap-link-if-no () {
         echo '    ' link '<' $to '>' already exists!
     fi
 }
+function setup-dependencies () {
+    echo 'Installing programs...'
+    sai-if-not fd-find
+    sai-if-not htop
+    sai-if-not ripgrep
+    sai-if-not net-tools
+}    
 
-ln -s "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
-if ask_yes_no 'Install links?'; then
+function setup-links-1 () {
+    echo 'Installing links-1...'
+    ln -s "$SCRIPT_DIR/.ripgreprc" "$HOME/.ripgreprc"
+}
+
+function setup-links-2 () {
     link-if-no /usr/bin/xfce4-keyboard-settings /usr/bin/kbs
     link-if-no /usr/bin/firefox                 /usr/bin/ffox
     snap-link-if-no chromium chr
-fi
+}
 
-if ask_yes_no 'Update xdg-user-dirs?'; then
+function update-xdg () {
     echo 'Fixing xfce user dirs...'
     xdg-user-dirs-update --set DESKTOP     "$HOME/desktop"
     xdg-user-dirs-update --set DOWNLOAD    "$HOME/edownloads"
@@ -89,9 +68,9 @@ if ask_yes_no 'Update xdg-user-dirs?'; then
     xdg-user-dirs-update --set MUSIC       "$HOME/music"
     xdg-user-dirs-update --set PICTURES    "$HOME/images"
     xdg-user-dirs-update --set VIDEOS      "$HOME/videos"
-fi
+}
 
-if ask_yes_no 'Update ~/.gitconfig?'; then
+function setup-git () {
     echo 'Updating ~/.gitconfig...'
     git_conf () { git config --global $1 $2; }
     git_conf core.editor "emacsclient"
@@ -100,9 +79,9 @@ if ask_yes_no 'Update ~/.gitconfig?'; then
     git_conf alias.co "checkout"
     git_conf alias.br "branch"
     # git_conf alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
-fi
+}
 
-if ask_yes_no 'Fix ctrl:nocaps?'; then
+function setup-nocaps () {
     echo 'Fixing ctrl:nocaps...'
     if [ -z $(cat /etc/default/keyboard | grep 'XKBOPTIONS' | grep 'ctrl:nocaps') ]; then
         echo '    Updating...'
@@ -111,10 +90,8 @@ if ask_yes_no 'Fix ctrl:nocaps?'; then
     else
         echo '    Already installed!'
     fi
-fi
+}
 
-if ask_yes_no 'Fix keys?'; then
+function setup-keys () {
     . ej-setup-keys.sh
-fi
-
-echo 'Done!'
+}

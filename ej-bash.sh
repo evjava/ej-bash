@@ -123,7 +123,7 @@ alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
-alias ml="cat Makefile | grep -Po '^\S[^:]+(?=:)'"
+alias ml="cat Makefile | grep -Po '^\S[^:=]+(?=:)'"
 alias rg='/usr/bin/rg --max-columns=500 --no-heading'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
