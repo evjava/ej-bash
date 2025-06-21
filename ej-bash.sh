@@ -124,8 +124,8 @@ alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
 alias ml="cat Makefile | grep -Po '^\S[^:=]+(?=:)'"
-alias rg='/usr/bin/rg --max-columns=500 --no-heading'
-alias rgn='/usr/bin/rg --max-columns=500 --no-heading --no-ignore-vcs --hidden'
+alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted'
+alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'
 alias summate='paste -sd+ | bc'
@@ -134,6 +134,7 @@ alias reversed='tac'
 alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
 alias c1='piep "p.split()[0]"'
 alias c2='piep "p.split()[1]"'
+alias c3='piep "p.split()[2]"'
 
 ## paths
 if [ -d "$HOME/.local/bin" ]; then

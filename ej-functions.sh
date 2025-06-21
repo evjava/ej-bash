@@ -173,3 +173,63 @@ function fixpy() {
     echo -e "\n=== DONE ==="
     echo "Files changed: ${#changed_files[@]}"
 }
+
+function hosts() {
+    # deepseek
+    # Print the header
+    echo "| host     | IP             |"
+    echo "|----------+----------------|"
+
+    # Parse the SSH config file
+    awk '
+    BEGIN {
+        host = ""; hostname = ""
+    }
+    /^Host / {
+        # If we have a previous host to print, do it before starting new one
+        if (host != "") {
+            printf "| %-8s | %s\n", host, hostname
+        }
+        host = $2
+        hostname = ""
+    }
+    /^  HostName / {
+        hostname = $2
+    }
+    END {
+        # Print the last host if there was one
+        if (host != "") {
+            printf "| %-8s | %s\n", host, hostname
+        }
+    }
+    ' $HOME/.ssh/config
+    echo $HOME/.ssh/config
+}
+
+function logout() {
+    read -p "$1 ( yes ( default ) / no ): " answer
+    if [[ $answer != "no" ]]; then
+        xfce4-session-logout --logout
+    fi
+}
+
+function fmt-eval() {
+    # e.g. command `fmt-eval 'echo 1 {} 2' a` acts like `echo 1 a 2`
+    # `fmt-eval 'echo 1 {} 4' 2 3` acts like `echo 1 2 3 4`
+    if [[ $# -lt 1 ]]; then
+        echo "Usage: fmt-eval <format-string-with-maybe-{}> [args...]" >&2
+        return 1
+    fi
+
+    local fmt="$1"
+    shift
+    args=$*
+
+    if [[ "$fmt" == *"{}"* ]]; then
+        cmd="${fmt//\{\}/$args}"
+    else
+        # No placeholder, append all args
+        cmd="$fmt $args"
+    fi
+    eval "$cmd"
+}
