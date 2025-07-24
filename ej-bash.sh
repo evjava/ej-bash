@@ -91,7 +91,6 @@ alias sth='git stash'
 alias pop='git stash pop'
 alias gmlb='git merge @{-1} --no-edit'
 alias grlb='git rebase @{-1}'
-alias glo='git log --oneline -n'
 alias glod='git log -n'
 alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
 alias gb='git branch'
@@ -101,6 +100,7 @@ alias gc-='git co -'
 alias grh1='git reset HEAD~1'
 alias grh2='git reset HEAD~2'
 alias grh3='git reset HEAD~3'
+alias grh4='git reset HEAD~4'
 alias gdh1='git diff HEAD~1'
 
 ## emacs
@@ -114,7 +114,7 @@ alias pya='ping ya.ru'
 alias count_group='sort | uniq -c | sort -n'
 alias group_count='sort | uniq -c | sort -n'
 alias sz='du -sch'
-alias pin='pip install'
+alias pin='uv pip install --extra-index-url=https://pypi.tuna.tsinghua.edu.cn/simple'
 alias freh='free -h'
 alias wcl='wc -l'
 alias fdn='fd --no-ignore-vcs --hidden'
@@ -123,7 +123,7 @@ alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
-alias ml="cat Makefile | grep -Po '^\S[^:=]+(?=:)'"
+alias ml="cat Makefile | grep -Po '^\S[^:=]+(?=:)' | grep -v .PHONY"
 alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
