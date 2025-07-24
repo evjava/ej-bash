@@ -96,13 +96,30 @@ function wait-until-changed () {
     done
 }
 
-function gl () {
+function make_red() {
+    echo -e "\033[31m$@\033[0m"
+}
+
+function gl() {
     cnt="$1"
     branch="$2"
     if [ -z "$cnt" ]; then
         cnt=10
     fi
-    git log --pretty=format:"%ad %C(auto)%h <%ce> %s" --date="format:%Y-%m-%d--%H-%M" -n "$cnt" $branch
+
+    last_unpushed=$(git cherry origin/dev dev | head -n 1 | cut -d' ' -f 2)~1
+
+    date_arg="format:%Y-%m-%d--%H-%M"
+    fmt="%ad %C(auto)%h <%ce> %s"
+
+    if [ -z "$commit_first_unpushed" ]; then
+        git log --pretty=format:"$fmt" --date="$date_arg" -n "$cnt" $branch
+    else
+        unpushed=$(make_red '/ UNPUSHED')
+        git log --date="$date_arg" --pretty=format:"$fmt $unpushed" $branch $last_unpushed..
+        echo
+        git log --date="$date_arg" --pretty=format:"$fmt" -n "$cnt" $branch $last_unpushed
+    fi
 }
 
 function fixpy() {
