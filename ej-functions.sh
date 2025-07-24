@@ -107,18 +107,22 @@ function gl() {
         cnt=10
     fi
 
-    last_unpushed=$(git cherry origin/dev dev | head -n 1 | cut -d' ' -f 2)~1
+    if [ -z "$branch"]; then
+        branch=$(git branch --show-current)
+    fi
+
+    last_unpushed=$(git cherry origin/$branch $branch | head -n 1 | cut -d' ' -f 2)
 
     date_arg="format:%Y-%m-%d--%H-%M"
     fmt="%ad %C(auto)%h <%ce> %s"
 
-    if [ -z "$commit_first_unpushed" ]; then
+    if [ -z "$last_unpushed" ]; then
         git log --pretty=format:"$fmt" --date="$date_arg" -n "$cnt" $branch
     else
         unpushed=$(make_red '/ UNPUSHED')
-        git log --date="$date_arg" --pretty=format:"$fmt $unpushed" $branch $last_unpushed..
+        git log --date="$date_arg" --pretty=format:"$fmt $unpushed" $last_unpushed~1..
         echo
-        git log --date="$date_arg" --pretty=format:"$fmt" -n "$cnt" $branch $last_unpushed
+        git log --date="$date_arg" --pretty=format:"$fmt" -n "$cnt" $last_unpushed~1
     fi
 }
 
