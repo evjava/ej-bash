@@ -65,6 +65,7 @@ function port() { port=$1; sudo netstat --all --program | grep ":$port"; }
 
 # functions: long
 . $SCRIPT_DIR/ej-functions.sh
+. $SCRIPT_DIR/ej-git.sh
 
 ## apt aliases
 alias ase="apt-cache search"
@@ -77,31 +78,6 @@ alias l="ls -agGp --color --time-style=long-iso"
 alias rm='rm -i'
 alias mk='mkdir'
 alias fd='fdfind --follow'
-
-## git
-alias gd='git diff'
-alias gds='git diff --staged'
-alias gde='git diff | ema'
-alias grh='git diff > ~/trash/backup_diff.diff && git reset --hard'
-alias gst='git status -s'
-alias gsti='gst --ignore-submodules'
-alias gull='git pull'
-alias gush='git push'
-alias sth='git stash'
-alias pop='git stash pop'
-alias gmlb='git merge @{-1} --no-edit'
-alias grlb='git rebase @{-1}'
-alias glod='git log -n'
-alias glp="git log --date=format:'%Y-%m-%d' -60 --pretty='%h %ad %ae %s' -n"
-alias gb='git branch'
-alias gbr='git branch --remote'
-alias gcb='git co -b'
-alias gc-='git co -'
-alias grh1='git reset HEAD~1'
-alias grh2='git reset HEAD~2'
-alias grh3='git reset HEAD~3'
-alias grh4='git reset HEAD~4'
-alias gdh1='git diff HEAD~1'
 
 ## emacs
 alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (find-file-read-only \"/tmp/fi.diff\"))"'

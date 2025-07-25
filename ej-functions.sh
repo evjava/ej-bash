@@ -100,32 +100,6 @@ function make_red() {
     echo -e "\033[31m$@\033[0m"
 }
 
-function gl() {
-    cnt="$1"
-    branch="$2"
-    if [ -z "$cnt" ]; then
-        cnt=10
-    fi
-
-    if [ -z "$branch"]; then
-        branch=$(git branch --show-current)
-    fi
-
-    last_unpushed=$(git cherry origin/$branch $branch | head -n 1 | cut -d' ' -f 2)
-
-    date_arg="format:%Y-%m-%d--%H-%M"
-    fmt="%ad %C(auto)%h <%ce> %s"
-
-    if [ -z "$last_unpushed" ]; then
-        git log --pretty=format:"$fmt" --date="$date_arg" -n "$cnt" $branch
-    else
-        unpushed=$(make_red '/ UNPUSHED')
-        git log --date="$date_arg" --pretty=format:"$fmt $unpushed" $last_unpushed~1..
-        echo
-        git log --date="$date_arg" --pretty=format:"$fmt" -n "$cnt" $last_unpushed~1
-    fi
-}
-
 function fixpy() {
     # deepseek, prompt:
     # Write bash function which will do batch changes in python files.
