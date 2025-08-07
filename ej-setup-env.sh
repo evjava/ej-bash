@@ -96,3 +96,13 @@ function setup-nocaps () {
 function setup-keys () {
     . ej-setup-keys.sh
 }
+
+function setup-uv() {
+    if ! command -v uv >/dev/null 2>&1; then
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        cd ~
+        uv venv
+    else
+        echo "uv is already installed at $(command -v uv)" >&2
+    fi
+}

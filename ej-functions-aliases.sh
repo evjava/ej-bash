@@ -15,15 +15,6 @@ function load_if_exist() {
     fi
 }
 
-function pipcd() {
-    module="${1//-/_}"
-    init_path_cmd="import $module; print(${module}.__file__)"
-    init_path=$(python -c "$init_path_cmd")
-    if [ ! -z $init_path ]; then
-        cd $(dirname $init_path)
-    fi
-}
-
 function hig() {
     if [[ $# == 0 ]]; then
         echo "Usage: hig <pattern1> [<pattern2> ...]" >&2
@@ -100,75 +91,6 @@ function make_red() {
     echo -e "\033[31m$@\033[0m"
 }
 
-function fixpy() {
-    # deepseek, prompt:
-    # Write bash function which will do batch changes in python files.
-    # This is naked core: `fd -e py -x sed -i "s/$pattern/$sub/g"`
-    # You should:
-    # - check that pattern and sub passed ( empty sub is allowed )
-    # - run sed firstly in dry-run
-    # - then run `fd -e` only on files which can be really changed
-    if [[ -z "$1" ]]; then
-        echo "Error: Pattern argument is required."
-        return 1
-    fi
-
-    local pattern="$1"
-    local sub="${2:-}"  # Set sub to empty string if not provided
-    local dry_run_files=()
-    local changed_files=()
-
-    echo "=== DRY RUN ==="
-    # First pass: dry run to find affected files
-    while IFS= read -r file; do
-        if grep -q "$pattern" "$file"; then
-            dry_run_files+=("$file")
-            echo "Would change: $file"
-            # Show sample changes
-            grep -n "$pattern" "$file" | head -3 | while read -r line; do
-                echo "  Line $line"
-                echo "    Old: $(echo "$line" | sed -n "s/.*\($pattern\).*/    \1/p")"
-                echo "    New: $(echo "$line" | sed -n "s/$pattern/$sub/gp")"
-            done
-        fi
-    done < <(fd -e py)
-
-    if [[ ${#dry_run_files[@]} -eq 0 ]]; then
-        echo "No files would be modified."
-        return 0
-    fi
-
-    # Ask for confirmation
-    echo -e "\n=== SUMMARY ==="
-    echo "Pattern:    '$pattern'"
-    echo "Replacement: '$sub'"
-    echo "Files to modify:"
-    for file in "${dry_run_files[@]}"; do
-        echo "- $file"
-    done
-    read -rp "Proceed with changes? (y/N) " confirm
-
-    if [[ "$confirm" != [yY] ]]; then
-        echo "Aborted."
-        return 0
-    fi
-
-    echo -e "\n=== MAKING CHANGES ==="
-
-    # Second pass: actual changes only on files that need modification
-    for file in "${dry_run_files[@]}"; do
-        if sed -i "s/$pattern/$sub/g" "$file"; then
-            changed_files+=("$file")
-            echo "Changed: $file"
-        else
-            echo "Error changing: $file" >&2
-        fi
-    done
-
-    echo -e "\n=== DONE ==="
-    echo "Files changed: ${#changed_files[@]}"
-}
-
 function hosts() {
     # deepseek
     # Print the header
@@ -228,3 +150,59 @@ function fmt-eval() {
     fi
     eval "$cmd"
 }
+
+## functions: oneliners
+function klr () {  kill -9 `ps -e | grep $@ | tr -s ' ' | sed -n 1p | awk '{ print $1; }'`; }
+function fix_caps() { setxkbmap -option ctrl:nocaps; }
+function addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
+function fh() { free -h; }
+function restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
+function size() { du -sc $1 | awk '$2 == "total" {total += $1} END {print total}'; }
+function logout () { xfce4-session-logout --logout; }
+function docker-stop-rm() { cid=$1; docker stop $cid; docker rm $cid; }
+function port() { port=$1; sudo netstat --all --program | grep ":$port"; }
+
+## apt aliases
+alias ase="apt-cache search"
+alias sai="sudo apt install -y"
+alias sau="sudo apt-get update -y"
+alias sar="sudo apt-get remove"
+
+## ls and dirs
+alias l="ls -agGp --color --time-style=long-iso"
+alias rm='rm -i'
+alias mk='mkdir'
+alias fd='fdfind --follow'
+
+## emacs
+alias ema='cat > /tmp/fi.diff && emacsclient -e "(progn (other-window 1) (find-file-read-only \"/tmp/fi.diff\"))"'
+alias E="SUDO_EDITOR=\"emacsclient\" sudo -e"
+export SVN_EDITOR=emacsclient
+export EDITOR='emacsclient'
+
+## etc
+alias pya='ping ya.ru'
+alias count_group='sort | uniq -c | sort -n'
+alias group_count='sort | uniq -c | sort -n'
+alias sz='du -sch'
+alias freh='free -h'
+alias wcl='wc -l'
+alias fdn='fd --no-ignore-vcs --hidden'
+alias jn='jupyter notebook'
+alias flake8_files='flake8 --format="%(path)s" | group_count'
+alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
+alias hi="history"
+alias m='make'
+alias ml="cat Makefile | grep -Po '^\S[^:=]+(?=:)' | grep -v .PHONY"
+alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted'
+alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
+alias jsonp='python -m json.tool --no-ensure-ascii'
+alias doc='docker compose'
+alias summate='paste -sd+ | bc'
+alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
+alias reversed='tac'
+alias bat='batcat --theme="Monokai Extended Light" --style="header,grid"'
+alias c1='piep "p.split()[0]"'
+alias c2='piep "p.split()[1]"'
+alias c3='piep "p.split()[2]"'
+

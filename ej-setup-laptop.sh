@@ -7,4 +7,5 @@ if ask_yes_no 'Set xdg-user-dirs?'; then setup-xdg; fi
 if ask_yes_no 'Set ~/.gitconfig?'; then  setup-git; fi
 if ask_yes_no 'Set ctrl:nocaps?'; then   setup-no-caps; fi
 if ask_yes_no 'Set keys?'; then          setup-keys; fi
+if ask_yes_no 'Setup uv?'; then          setup-uv; fi
 echo 'Done!'
