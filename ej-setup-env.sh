@@ -1,6 +1,6 @@
 . ej-bash.sh
 . ej-env.sh
-echo ". $SCRIPT_DIR/ej-bash.sh" > ~/.bashrc
+echo ". $SCRIPT_DIR/ej-bash.sh" > $HOME/.bashrc
 if ! test -f $LOCAL_SCRIPT_PATH; then touch $LOCAL_SCRIPT_PATH; fi
 
 function sai-if-not () {
@@ -100,7 +100,8 @@ function setup-keys () {
 function setup-uv() {
     if ! command -v uv >/dev/null 2>&1; then
         curl -LsSf https://astral.sh/uv/install.sh | sh
-        cd ~
+        source $HOME/.local/bin/env
+        cd $HOME
         uv venv
     else
         echo "uv is already installed at $(command -v uv)" >&2
