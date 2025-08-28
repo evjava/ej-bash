@@ -193,7 +193,7 @@ alias flake8_files='flake8 --format="%(path)s" | group_count'
 alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
-alias ml="cat Makefile | grep -Po '^\S[^:=]+(?=:)' | grep -v .PHONY"
+alias ml="cat Makefile | grep -P '^\S[^:=]+(?=:)' | grep -v .PHONY"
 alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
@@ -206,3 +206,4 @@ alias c1='piep "p.split()[0]"'
 alias c2='piep "p.split()[1]"'
 alias c3='piep "p.split()[2]"'
 
+alias dive="docker run -ti --rm  -v /var/run/docker.sock:/var/run/docker.sock docker.io/wagoodman/dive"
