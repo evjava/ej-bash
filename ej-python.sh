@@ -112,7 +112,7 @@ function pys () {
         echo "📍 $fp" | ishift $depth;
         if test -f $fp; then
             depth1=$(($depth+$level_size))
-            rg '^\s*(def |class )' $fp | ishift $depth1
+            rg '^\s*((async )?def |class )' $fp | ishift $depth1
         fi
     done
 }
@@ -125,14 +125,17 @@ function pyd() {
         return 1
     fi
 
-    # Split the argument into module and function parts
-    IFS='.' read -r module_name function_name <<< "$1"
+    module_name="${1%.*}"
+    obj_name="${1##*.}"
+
+    echo module_name: $module_name
+    echo object_name: $obj_name
 
     # Python command to get help
     if [ -z "$function_name" ]; then
         python -c "import $module_name; help($module_name)"
     else
-        python -c "from $module_name import $function_name; help($function_name)"
+        python -c "from $module_name import $obj_name; help($obj_name)"
     fi
 }
 
