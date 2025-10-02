@@ -27,7 +27,7 @@ alias gbw='git browse'
 alias git-authors='fd -e py -x git blame --line-porcelain | grep -oP "(?<=author-mail <).*(?=>)" | group_count'
 
 function git-grep() {
-    pattern="$1"
+    local pattern="$1"
     git grep "$pattern" $(git rev-list --all)
 }
 

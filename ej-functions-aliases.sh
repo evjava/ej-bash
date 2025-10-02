@@ -1,3 +1,5 @@
+function rel () { . "$HOME/.bashrc"; echo 'Config reloaded!'; }
+
 function sizes() {
     dir=$1
     if [ -z "$dir" ]; then
@@ -94,8 +96,8 @@ function make_red() {
 function hosts() {
     # deepseek
     # Print the header
-    echo "| host     | IP             |"
-    echo "|----------+----------------|"
+    echo "| host       | IP             |"
+    echo "|------------+----------------|"
 
     # Parse the SSH config file
     awk '
@@ -105,7 +107,7 @@ function hosts() {
     /^Host / {
         # If we have a previous host to print, do it before starting new one
         if (host != "") {
-            printf "| %-8s | %s\n", host, hostname
+            printf "| %-10s | %s\n", host, hostname
         }
         host = $2
         hostname = ""
@@ -116,7 +118,7 @@ function hosts() {
     END {
         # Print the last host if there was one
         if (host != "") {
-            printf "| %-8s | %s\n", host, hostname
+            printf "| %-10s | %s\n", host, hostname
         }
     }
     ' $HOME/.ssh/config
@@ -189,12 +191,10 @@ alias freh='free -h'
 alias wcl='wc -l'
 alias fdn='fd --no-ignore-vcs --hidden'
 alias jn='jupyter notebook'
-alias flake8_files='flake8 --format="%(path)s" | group_count'
-alias flake8_keys='flake8 . | grep -oP "(?<=: )[A-Z]+\d+" | group_count'
 alias hi="history"
 alias m='make'
 alias ml="cat Makefile | grep -P '^\S[^:=]+(?=:)' | grep -v .PHONY"
-alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted'
+alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --sort=path'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
 alias jsonp='python -m json.tool --no-ensure-ascii'
 alias doc='docker compose'

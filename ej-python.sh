@@ -73,7 +73,7 @@ function fixpy() {
 }
 
 function imports () {
-    target_dir=$([ -d "src" ] && echo "src" || echo "package/src")
+    target_dir=$([ -d "src" ] && echo "src" || [ -d "package/src" ] && echo "package/src" || echo ".")
     for fp in $(fd -e py . $target_dir); do
         pm=$(echo $fp | sed -e "s/\//./g" -e "s/.py//g")
         echo $pm
@@ -117,11 +117,11 @@ function pys () {
     done
 }
 
-function pyd() {
+function pyh() {
     # Check if argument is provided
     if [ -z "$1" ]; then
-        echo "Usage: pyd <module>[.<function>]"
-        echo "Example: pyd os.system"
+        echo "Usage: pyh <module>[.<function>]"
+        echo "Example: pyh os.system"
         return 1
     fi
 
@@ -132,7 +132,7 @@ function pyd() {
     echo object_name: $obj_name
 
     # Python command to get help
-    if [ -z "$function_name" ]; then
+    if [ -z "$obj_name" ]; then
         python -c "import $module_name; help($module_name)"
     else
         python -c "from $module_name import $obj_name; help($obj_name)"
@@ -149,7 +149,7 @@ function pipcd() {
 }
 
 function rfix() {
-    target_dir=$([ -d "src" ] && echo "src" || echo "package/src")
+    target_dir=$([ -d "src" ] && echo "src" || [ -d "package/src" ] && echo "package/src" || echo ".")
     ruff check --fix $target_dir
     ruff format $target_dir
 }
