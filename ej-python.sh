@@ -125,11 +125,13 @@ function pyh() {
         return 1
     fi
 
-    module_name="${1%.*}"
-    obj_name="${1##*.}"
-
-    echo module_name: $module_name
-    echo object_name: $obj_name
+    if [[ "$1" == *.* ]]; then
+        module_name="${1%.*}"
+        obj_name="${1##*.}"
+    else
+        module_name="$1"
+        obj_name=""
+    fi
 
     # Python command to get help
     if [ -z "$obj_name" ]; then
