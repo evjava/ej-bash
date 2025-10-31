@@ -93,6 +93,7 @@ function make_red() {
     echo -e "\033[31m$@\033[0m"
 }
 
+
 function hosts() {
     # deepseek
     # Print the header
@@ -105,6 +106,11 @@ function hosts() {
         host = ""; hostname = ""
     }
     /^Host / {
+        # Skip wildcard host entries
+        if ($2 == "*") {
+            host = ""
+            next
+        }
         # If we have a previous host to print, do it before starting new one
         if (host != "") {
             printf "| %-10s | %s\n", host, hostname
@@ -117,12 +123,11 @@ function hosts() {
     }
     END {
         # Print the last host if there was one
-        if (host != "") {
+        if (host != "" && host != "*") {
             printf "| %-10s | %s\n", host, hostname
         }
     }
     ' $HOME/.ssh/config
-    echo $HOME/.ssh/config
 }
 
 function logout() {
