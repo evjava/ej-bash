@@ -22,7 +22,7 @@ function hig() {
         echo "Usage: hig <pattern1> [<pattern2> ...]" >&2
         return 1
     fi
-    local cmd="history"
+    local cmd="HISTTIMEFORMAT='' history"
     local cnt="10"
     while (( "$#" )); do
         case $1 in
