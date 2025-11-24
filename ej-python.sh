@@ -75,7 +75,7 @@ function fixpy() {
 function imports () {
     target_dir=$([ -d "src" ] && echo "src" || [ -d "package/src" ] && echo "package/src" || echo ".")
     for fp in $(fd -e py . $target_dir); do
-        pm=$(echo $fp | sed -e "s/\//./g" -e "s/.py//g")
+        pm=$(echo $fp | sed -e "s/\//./g" -e "s/\.py//g")
         echo $pm
         python -c "import $pm" >/dev/null
     done
