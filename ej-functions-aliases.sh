@@ -41,6 +41,18 @@ function hig() {
     eval "$cmd"
 }
 
+function greps() {
+    local cmd="cat"
+    for pattern in "$@"; do
+        if [[ $pattern == -* ]]; then
+            cmd="$cmd | grep -v '${pattern:1}'"
+        else
+            cmd="$cmd | grep '$pattern'"
+        fi
+    done
+    eval "$cmd"
+}
+
 function dot-png() {
     local dot_path="$1"
     local extra="$2"
