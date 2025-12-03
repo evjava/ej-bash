@@ -1,4 +1,7 @@
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 function rel () { . "$HOME/.bashrc"; echo 'Config reloaded!'; }
+function ej-bash-gull () { git -C $SCRIPT_DIR pull; }
 
 function sizes() {
     dir=$1
