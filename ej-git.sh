@@ -22,6 +22,7 @@ alias grh2='git reset HEAD~2'
 alias grh3='git reset HEAD~3'
 alias grh4='git reset HEAD~4'
 alias gdh1='git diff HEAD~1'
+alias gdh2='git diff HEAD~2'
 alias gbw='git browse'
 
 alias git-authors='fd -e py -x git blame --line-porcelain | grep -oP "(?<=author-mail <).*(?=>)" | group_count'

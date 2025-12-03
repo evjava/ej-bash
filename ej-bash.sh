@@ -17,3 +17,4 @@ if ! shopt -oq posix; then load_if_exist /etc/bash_completion; fi
 export RIPGREP_CONFIG_PATH="$SCRIPT_DIR/.ripgreprc"
 if test -d "$HOME/.local/bin"; then export PATH="$HOME/.local/bin:$PATH"; fi
 source "$HOME/.venv/bin/activate"
+export PYTHONPATH="src:$PYTHONPATH"
