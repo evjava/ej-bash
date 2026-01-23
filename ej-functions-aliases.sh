@@ -183,6 +183,8 @@ function size() { du -sc $1 | awk '$2 == "total" {total += $1} END {print total}
 function logout () { xfce4-session-logout --logout; }
 function docker-stop-rm() { cid=$1; docker stop $cid; docker rm $cid; }
 function port() { port=$1; sudo netstat --all --program | grep ":$port"; }
+function parse-is-dry () { [[ "${dry:-${DRY:-}}" =~ ^(1|yes|true)$ ]] && echo true || echo; }
+function parse-is-debug () { [[ "${dry:-${DRY:-}}" =~ ^(1|yes|true)$ ]] && echo true || echo; }
 
 ## apt aliases
 alias ase="apt-cache search"

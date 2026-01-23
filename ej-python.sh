@@ -1,7 +1,7 @@
 alias pytest='uv run pytest'
 alias py='python'
 alias pin='uv pip install --extra-index-url=https://pypi.tuna.tsinghua.edu.cn/simple'
-alias pinu='pin --upgrade'
+alias pinu='pin --upgrade --index-strategy=unsafe-best-match'
 
 function fixpy() {
     # deepseek, prompt:
