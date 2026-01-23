@@ -109,10 +109,14 @@ function pys () {
     for fp in $(py-and-dirs | sort); do
         # echo $fp
         depth=$(($(count_slashes $fp)*$level_size))
-        echo "📍 $fp" | ishift $depth;
         if test -f $fp; then
+            lines_count=$(wc -l $fp | c1)
+            echo "📍 $lines_count : $fp" | ishift $depth;
             depth1=$(($depth+$level_size))
-            rg '^\s*((async )?def |class )' $fp | ishift $depth1
+            rg --line-number '^\s*((async )?def |class )' $fp | ishift $depth1
+        else
+            files_count=$(fdfind -e py . $fp | wc -l)
+            echo "📍 $files_count : $fp" | ishift $depth;
         fi
     done
 }
