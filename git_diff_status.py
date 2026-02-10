@@ -98,7 +98,7 @@ def format_status_code(status_code: str) -> str:
     return f"{colorize(staged, staged_color)}{colorize(unstaged, unstaged_color)}"
 
 
-def get_diff_stats(repo):
+def get_diff_stats(repo) -> tuple[dict, str]:
     """Parse git diff --stat HEAD and return {filename: stat_str} dict and summary line."""
     diff_output = repo.git.diff("--stat", "HEAD")
 
@@ -194,7 +194,11 @@ def main():
         print("Not a git repository", file=sys.stderr)
         sys.exit(1)
 
-    diff_stats, summary_line = get_diff_stats(repo)
+    try:
+        diff_stats, summary_line = get_diff_stats(repo)
+    except Exception:
+        print("Empty repository: can not call 'diff'")
+        diff_stats, summary_line = {}, None
     status_items = get_status_items(repo)
 
     max_len = get_max_filename_length(diff_stats)

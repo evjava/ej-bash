@@ -216,7 +216,7 @@ alias jn='jupyter notebook'
 alias hi="history"
 alias m='make'
 alias ml='awk -F: '\''/^[a-zA-Z0-9_-]+:/ && !seen[$1]++ {print $1}'\'' Makefile'
-alias rg='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --sort=path'
+alias rg='/usr/bin/rg --glob ''!uv.lock'' --glob ''!poetry.lock'' --max-columns=500 --no-heading --follow --unrestricted --sort=path'
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
 alias rgp='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --sort=path -t py'
 alias jsonp='python -m json.tool --no-ensure-ascii'
