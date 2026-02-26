@@ -173,6 +173,13 @@ function fmt-eval() {
     eval "$cmd"
 }
 
+function link-here () {
+    local target="$1"
+    local linkname
+    linkname=$(basename "$target")
+    ln -s "$target" "$linkname"
+}
+
 ## functions: oneliners
 function klr () {  kill -9 `ps -e | grep $@ | tr -s ' ' | sed -n 1p | awk '{ print $1; }'`; }
 function fix_caps() { setxkbmap -option ctrl:nocaps; }
