@@ -14,6 +14,7 @@ HOSTNAME_PRETTY=$(get-hostname-pretty)
 function hg-ps1() { hg identify -b 2>/dev/null; }
 function set-prompt() { PS1="\n$(date +%H:%M); $(__git_ps1)$(hg-ps1)\n\u@$HOSTNAME_PRETTY:\w \\$ "; }
 function set-prompt-minimal() { function set-prompt() { PS1="$ "; } }
+alias set-minimal-prompt=set-prompt-minimal
 PROMPT_COMMAND='history -a; history -c; history -r; set-prompt'
 if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then debian_chroot=$(cat /etc/debian_chroot); fi
 case "$TERM" in
