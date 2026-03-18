@@ -72,16 +72,15 @@ function update-xdg () {
 
 function setup-git () {
     echo 'Updating ~/.gitconfig...'
-    git_conf () { git config --global $1 "$2"; }
-    git_conf core.editor "emacsclient"
-    git_conf alias.st "status"
-    git_conf alias.ci "commit"
-    git_conf alias.co "checkout"
-    git_conf alias.br "branch"
-    git_conf alias.url "config --get remote.origin.url"
-    git_conf init.defaultBranch "main"
-    git_conf credential.helper "cache --timeout=36000"
-    # git_conf alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
+    git config --global core.editor "emacsclient"
+    git config --global alias.st "status"
+    git config --global alias.ci "commit"
+    git config --global alias.co "checkout"
+    git config --global alias.br "branch"
+    git config --global alias.url "config --get remote.origin.url"
+    git config --global init.defaultBranch "main"
+    git config --global credential.helper "cache --timeout=36000"
+    # git config --global alias.hist 'log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'
 }
 
 function setup-nocaps () {
