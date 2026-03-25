@@ -145,6 +145,18 @@ function hosts() {
     ' $HOME/.ssh/config
 }
 
+function tramp() {
+    if [ -z "$1" ]; then
+        echo "Usage: tramp <file-path>"
+        return 1
+    fi
+    
+    local file_path=$(realpath "$1")
+    local pretty_host=$(hostnamectl --pretty | tr '[:upper:]' '[:lower:]')
+    
+    echo "(find-file \"/ssh:$pretty_host:$file_path\")"
+}
+
 function logout() {
     read -p "$1 ( yes ( default ) / no ): " answer
     if [[ $answer != "no" ]]; then
