@@ -1,5 +1,5 @@
-# emacs-29
-emacs_dir='emacs-29.4'
+# emacs-30.2
+emacs_dir='emacs-30.2'
 
 cd /tmp
 if ! test -f $emacs_dir.tar.gz; then
@@ -32,7 +32,8 @@ sudo apt install -y \
      libjansson4 \
      libjansson-dev \
      imagemagick-6.q16hdri \
-     dvipng
+     dvipng \
+     libgif-dev \
 
 CC="gcc-10" ./autogen.sh
 # mmap not supported yet...
