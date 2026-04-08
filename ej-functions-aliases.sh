@@ -239,7 +239,7 @@ alias rg='/usr/bin/rg --glob ''!uv.lock'' --glob ''!poetry.lock'' --max-columns=
 alias rgn='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --no-ignore-vcs --hidden'
 alias rgp='/usr/bin/rg --max-columns=500 --no-heading --follow --unrestricted --sort=path -t py'
 alias jsonp='python -m json.tool --no-ensure-ascii'
-alias doc='docker compose'
+alias doc='docker compose --progress=plain'
 alias summate='paste -sd+ | bc'
 alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
 alias reversed='tac'
