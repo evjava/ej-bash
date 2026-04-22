@@ -18,7 +18,6 @@ except ImportError:
     print("GitPython not installed. Install with: pip install GitPython", file=sys.stderr)
     sys.exit(1)
 
-
 # ANSI color codes
 class Colors:
     RESET = "\033[0m"
@@ -130,12 +129,13 @@ def get_diff_stats(repo) -> tuple[dict, str]:
     return diff_stats, summary_line
 
 
-def get_status_items(repo, target_dir=None):
+def get_status_items(repo, target_dir=None, relpath_converter=None):
     """Parse git status --short and return list of (status_code, filename) tuples.
 
     Args:
         repo: GitPython Repo object
         target_dir: If provided, only return items in this directory
+        relpath_converter: Function to convert repo-relative paths to cwd-relative paths
     """
     status_output = repo.git.status("--short", porcelain=True)
 
@@ -160,6 +160,10 @@ def get_status_items(repo, target_dir=None):
             # Check if file is in target directory
             if not filename.startswith(target_rel):
                 continue
+
+        # Convert to cwd-relative path
+        if relpath_converter:
+            filename = relpath_converter(filename)
 
         items.append((status_code, filename))
 
@@ -225,6 +229,15 @@ def main():
         print("Not a git repository", file=sys.stderr)
         sys.exit(1)
 
+    # Get current working directory
+    cwd = os.getcwd()
+
+    # Function to convert repo-relative path to cwd-relative path
+    def relpath(repo_path):
+        """Convert repo-relative path to cwd-relative path."""
+        repo_abs = os.path.join(repo.working_dir, repo_path)
+        return os.path.relpath(repo_abs, cwd)
+
     # Print header with directory if specified
     if target_dir:
         header = f"Status for: {colorize(target_dir, Colors.GREEN)} "
@@ -242,7 +255,10 @@ def main():
     except Exception:
         print("Empty repository: can not call 'diff'")
         diff_stats, summary_line = {}, None
-    status_items = get_status_items(repo, target_dir)
+    status_items = get_status_items(repo, target_dir, relpath)
+
+    # Convert diff_stats keys to cwd-relative paths
+    diff_stats = {relpath(k): v for k, v in diff_stats.items()}
 
     max_len = get_max_filename_length(diff_stats)
     print_merged_output(status_items, diff_stats, max_len)
