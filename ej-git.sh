@@ -2,9 +2,9 @@
 alias gd='git diff'
 alias gds='git diff --staged'
 alias gde='git diff | ema'
-alias grh='git diff > ~/trash/backup_diff.diff && git reset --hard'
+alias grh='mkdir -p ~/trash && git diff > ~/trash/backup_diff.diff && git reset --hard'
 # alias gst='git status -s'
-alias gst="python $SCRIPT_DIR/git_diff_status.py"
+alias gst="python $SCRIPT_DIR/py-tools/git_diff_status.py"
 alias gsti='gst --ignore-submodules'
 alias gull='git pull'
 alias gush='git push'
