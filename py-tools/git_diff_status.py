@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """
 Merge git status --short with git diff --stat HEAD
+
+Usage:
+    git_diff_status.py [directory]
+
+If a directory is provided, shows status only for files in that directory.
 """
 
 import re
+import os
 import sys
 
 try:
@@ -11,7 +17,6 @@ try:
 except ImportError:
     print("GitPython not installed. Install with: pip install GitPython", file=sys.stderr)
     sys.exit(1)
-
 
 # ANSI color codes
 class Colors:
@@ -124,9 +129,23 @@ def get_diff_stats(repo) -> tuple[dict, str]:
     return diff_stats, summary_line
 
 
-def get_status_items(repo):
-    """Parse git status --short and return list of (status_code, filename) tuples."""
+def get_status_items(repo, target_dir=None, relpath_converter=None):
+    """Parse git status --short and return list of (status_code, filename) tuples.
+
+    Args:
+        repo: GitPython Repo object
+        target_dir: If provided, only return items in this directory
+        relpath_converter: Function to convert repo-relative paths to cwd-relative paths
+    """
     status_output = repo.git.status("--short", porcelain=True)
+
+    # Convert target_dir to relative path for comparison
+    target_rel = None
+    if target_dir:
+        target_rel = os.path.relpath(target_dir, repo.working_dir)
+        # If target_dir is the repo root, show all files
+        if target_rel == ".":
+            target_rel = None
 
     items = []
     for line in status_output.split("\n"):
@@ -136,6 +155,16 @@ def get_status_items(repo):
         # Extract first 2 chars as status, rest as filename
         status_code = line[:2]
         filename = line[3:] if len(line) > 3 else line[2:]
+
+        if target_rel:
+            # Check if file is in target directory
+            if not filename.startswith(target_rel):
+                continue
+
+        # Convert to cwd-relative path
+        if relpath_converter:
+            filename = relpath_converter(filename)
+
         items.append((status_code, filename))
 
     return items
@@ -188,18 +217,48 @@ def colorize_summary_line(summary_line: str) -> str:
 
 
 def main():
+    # Get target directory from command line argument
+    target_dir = sys.argv[1] if len(sys.argv) > 1 else None
+
     try:
-        repo = git.Repo(search_parent_directories=True)
+        if target_dir:
+            repo = git.Repo(target_dir)
+        else:
+            repo = git.Repo(search_parent_directories=True)
     except git.InvalidGitRepositoryError:
         print("Not a git repository", file=sys.stderr)
         sys.exit(1)
 
+    # Get current working directory
+    cwd = os.getcwd()
+
+    # Function to convert repo-relative path to cwd-relative path
+    def relpath(repo_path):
+        """Convert repo-relative path to cwd-relative path."""
+        repo_abs = os.path.join(repo.working_dir, repo_path)
+        return os.path.relpath(repo_abs, cwd)
+
+    # Print header with directory if specified
+    if target_dir:
+        header = f"Status for: {colorize(target_dir, Colors.GREEN)} "
+        print(colorize(header, Colors.GRAY))
+
     try:
         diff_stats, summary_line = get_diff_stats(repo)
+        # Filter diff_stats to target_dir if specified
+        if target_dir:
+            # Git filenames are relative to repo root, convert target_dir to match
+            target_rel = os.path.relpath(target_dir, repo.working_dir)
+            # If target_dir is the repo root, show all files
+            if target_rel != ".":
+                diff_stats = {k: v for k, v in diff_stats.items() if k.startswith(target_rel)}
     except Exception:
         print("Empty repository: can not call 'diff'")
         diff_stats, summary_line = {}, None
-    status_items = get_status_items(repo)
+    status_items = get_status_items(repo, target_dir, relpath)
+
+    # Convert diff_stats keys to cwd-relative paths
+    diff_stats = {relpath(k): v for k, v in diff_stats.items()}
 
     max_len = get_max_filename_length(diff_stats)
     print_merged_output(status_items, diff_stats, max_len)
