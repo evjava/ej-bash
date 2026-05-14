@@ -292,7 +292,7 @@ function switch-theme() {
 
 ## functions: oneliners
 function klr () {  kill -9 `ps -e | grep $@ | tr -s ' ' | sed -n 1p | awk '{ print $1; }'`; }
-function fix_caps() { setxkbmap -option ctrl:nocaps; }
+function fix-caps() { setxkbmap -option ctrl:nocaps; }
 function addr() { ifconfig | grep -Po '(?<=inet )[\d\.]+'; }
 function fh() { free -h; }
 function restart-wifi() { nmcli radio wifi off && nmcli radio wifi on; }
