@@ -56,6 +56,48 @@ function greps() {
     eval "$cmd"
 }
 
+function greps-in() {
+    local patterns=()
+    local exclude_patterns=()
+
+    # Separate positive and negative patterns
+    for arg in "$@"; do
+        if [[ $arg == -* ]]; then
+            exclude_patterns+=("${arg:1}")
+        else
+            patterns+=("$arg")
+        fi
+    done
+
+    # Process each file from stdin
+    while read -r file; do
+        [[ -f "$file" ]] || continue
+
+        local match=true
+
+        # Check all positive patterns must match
+        for pattern in "${patterns[@]}"; do
+            if ! grep -q "$pattern" "$file"; then
+                match=false
+                break
+            fi
+        done
+
+        # Check no exclude patterns match
+        if [[ $match == true ]]; then
+            for pattern in "${exclude_patterns[@]}"; do
+                if grep -q "$pattern" "$file"; then
+                    match=false
+                    break
+                fi
+            done
+        fi
+
+        # Output file if all conditions satisfied
+        [[ $match == true ]] && echo "$file"
+    done
+}
+
 function dot-png() {
     local dot_path="$1"
     local extra="$2"
@@ -109,7 +151,16 @@ function make_red() {
 }
 
 
+function hosts-names() {
+    awk '/^Host / && $2 != "*" { print $2 }' $HOME/.ssh/config
+}
+
 function hosts() {
+    if [[ "$1" == "--names" ]]; then
+        hosts-names
+        return
+    fi
+
     # deepseek
     # Print the header
     echo "| host       | IP             |"
@@ -150,18 +201,11 @@ function tramp() {
         echo "Usage: tramp <file-path>"
         return 1
     fi
-    
+
     local file_path=$(realpath "$1")
     local pretty_host=$(hostnamectl --pretty | tr '[:upper:]' '[:lower:]')
-    
-    echo "(find-file \"/ssh:$pretty_host:$file_path\")"
-}
 
-function logout() {
-    read -p "$1 ( yes ( default ) / no ): " answer
-    if [[ $answer != "no" ]]; then
-        xfce4-session-logout --logout
-    fi
+    echo "(find-file \"/ssh:$pretty_host:$file_path\")"
 }
 
 function fmt-eval() {
@@ -189,7 +233,61 @@ function link-here () {
     local target="$1"
     local linkname
     linkname=$(basename "$target")
+
+    if [ -e "$linkname" ] || [ -L "$linkname" ]; then
+        read -p "Override existing '$linkname'? [y/N] " -r
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "Aborted."
+            return 1
+        fi
+        rm -f "$linkname"
+    fi
+
     ln -s "$target" "$linkname"
+}
+
+function docx-to-md() {
+    if [ $# -ne 1 ]; then
+        echo "Usage: docx-to-md <input.docx>"
+        return 1
+    fi
+    input="$1"
+    output="${input%.docx}.md"
+    pandoc "$input" -t markdown -o "$output" --wrap=none
+    echo "Converted to $output"
+}
+
+function switch-theme() {
+    local theme_dir="/usr/share/xfce4/terminal/colorschemes"
+    local dark_bg="#131926"
+    local light_bg="#f1f1f1"
+    local theme_file new_theme bg fg palette
+
+    # Get current background color
+    local current_bg
+    current_bg=$(xfconf-query -c xfce4-terminal -p /color-background 2>/dev/null)
+
+    if [ "$current_bg" = "$dark_bg" ]; then
+        # Currently dark, switch to light
+        theme_file="$theme_dir/xubuntu-light.theme"
+        new_theme="light"
+    else
+        # Currently light (or unknown), switch to dark
+        theme_file="$theme_dir/xubuntu-dark.theme"
+        new_theme="dark"
+    fi
+
+    # Extract colors from theme file
+    bg=$(grep "^ColorBackground=" "$theme_file" | cut -d= -f2)
+    fg=$(grep "^ColorForeground=" "$theme_file" | cut -d= -f2)
+    palette=$(grep "^ColorPalette=" "$theme_file" | cut -d= -f2)
+
+    # Apply all color settings
+    xfconf-query -c xfce4-terminal -p /color-background -s "$bg"
+    xfconf-query -c xfce4-terminal -p /color-foreground -s "$fg"
+    xfconf-query -c xfce4-terminal -p /color-palette -s "$palette"
+
+    echo "Switched to $new_theme theme"
 }
 
 ## functions: oneliners
