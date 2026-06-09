@@ -27,6 +27,8 @@ fi
 # claude-code
 # also can be defined via ~/.claude/settings.json, in `{"env": {"CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1"}}`
 export CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1
-function set-title() { PROMPT_COMMAND=
-echo -en "\033]0;$1\a"; }
+function set-title() {
+    PROMPT_COMMAND=
+    echo -en "\033]0;$1\a"
+}
 alias claude='set-title $(basename "$PWD"); claude'

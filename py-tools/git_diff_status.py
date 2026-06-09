@@ -3,7 +3,10 @@
 Merge git status --short with git diff --stat HEAD
 
 Usage:
-    git_diff_status.py [directory]
+    git_diff_status.py [--color] [directory]
+
+Options:
+    --color    Force color output (like git --color=always)
 
 If a directory is provided, shows status only for files in that directory.
 """
@@ -18,6 +21,9 @@ except ImportError:
     print("GitPython not installed. Install with: pip install GitPython", file=sys.stderr)
     sys.exit(1)
 
+# Color mode: None = auto (tty-based), True = always, False = never
+USE_COLOR = None
+
 # ANSI color codes
 class Colors:
     RESET = "\033[0m"
@@ -27,15 +33,15 @@ class Colors:
 
 
 def colorize(text: str, color: str) -> str:
-    """Apply color to text if output is a terminal."""
-    if sys.stdout.isatty():
+    """Apply color to text if color output is enabled."""
+    if USE_COLOR or (USE_COLOR is None and sys.stdout.isatty()):
         return f"{color}{text}{Colors.RESET}"
     return text
 
 
 def colorize_stat(stat: str) -> str:
     """Colorize the stat string - additions in green, deletions in red."""
-    if not sys.stdout.isatty():
+    if not (USE_COLOR or (USE_COLOR is None and sys.stdout.isatty())):
         return stat
 
     # Match additions (+) and deletions (-)
@@ -216,9 +222,20 @@ def colorize_summary_line(summary_line: str) -> str:
     return f"#{''.join(result)}"
 
 
+def parse_args():
+    """Parse command line arguments."""
+    global USE_COLOR
+    args = sys.argv[1:]
+    color_always = "--color" in args
+    if color_always:
+        USE_COLOR = True
+        args = [a for a in args if a != "--color"]
+    target_dir = args[0] if args else None
+    return target_dir
+
+
 def main():
-    # Get target directory from command line argument
-    target_dir = sys.argv[1] if len(sys.argv) > 1 else None
+    target_dir = parse_args()
 
     try:
         if target_dir:
