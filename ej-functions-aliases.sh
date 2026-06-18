@@ -347,3 +347,4 @@ alias c2='piep "p.split()[1]"'
 alias c3='piep "p.split()[2]"'
 
 alias dive="docker run -ti --rm  -v /var/run/docker.sock:/var/run/docker.sock docker.io/wagoodman/dive"
+alias convert-doc="python $SCRIPT_DIR/py-tools/convert_doc.py"
