@@ -38,6 +38,24 @@ class Colors:
     GREEN = "\033[32m"
     GRAY = "\033[90m"
 
+# Regex to strip ANSI escape sequences for visual length calculation
+_ANSI_RE = re.compile(r'\x1b\[[0-9;]*m')
+
+
+def _visual_len(s: str) -> int:
+    """String length ignoring ANSI escape codes (zero visual width)."""
+    return len(_ANSI_RE.sub('', s))
+
+
+def _visual_ljust(s: str, width: int) -> str:
+    """Left-justify string, counting only visible characters for width."""
+    if width <= 0:
+        return s
+    vlen = _visual_len(s)
+    if vlen < width:
+        return s + " " * (width - vlen)
+    return s
+
 
 def colorize(text: str, color: str) -> str:
     """Apply color to text if color output is enabled."""
@@ -136,6 +154,8 @@ def get_diff_stats(repo) -> tuple[dict, str]:
         pattern_match = re.match(r"^\s*(.+?)\s*\|\s*(.+)$", line)
         if pattern_match:
             filename = pattern_match.group(1).rstrip()
+            # Normalize git diff --stat rename arrow (=>) to match git status --short arrow (->)
+            filename = filename.replace(" => ", " -> ")
             stat = f" | {pattern_match.group(2)}"
             diff_stats[filename] = stat
 
@@ -296,7 +316,7 @@ def _get_counts_first_lines(status_items, diff_stats, pw, mw):
             else:
                 counts = colorize_stat(stat)
             # Pad counts section to uniform width, then add divider
-            counts_padded = counts.ljust(cw) if cw > 0 else ""
+            counts_padded = _visual_ljust(counts, cw) if cw > 0 else ""
             lines.append(f"{counts_padded} | {status_colored} {filename}")
             del diff_stats[filename]
         else:
