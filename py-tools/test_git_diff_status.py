@@ -53,6 +53,8 @@ def test_diff_stat_no_truncation():
     """Test that git diff --stat=9999,999 prevents path truncation."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import git_diff_status as gds
+    gds.USE_COLOR = False
+    gds.COUNTS_FIRST = False  # test default inline mode
 
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_dir = create_test_repo(tmpdir)
@@ -119,6 +121,7 @@ def test_short_mode():
 
     gds.USE_COLOR = False
     gds.SHORT = True
+    gds.COUNTS_FIRST = False  # test default inline mode
 
     # Unit: _count_stat_changes
     assert gds._count_stat_changes(" | 157 +++++----") == (5, 4)
@@ -131,7 +134,7 @@ def test_short_mode():
     # Unit: parse_stat_short — no bar graphs, just +N/-M
     assert gds.parse_stat_short(" | 157 +++++----", 0, 0) == " | +5 -4"
     assert gds.parse_stat_short(" | 88 ++", 0, 0) == " | +2"
-    assert gds.parse_stat_short(" | 10 --", 0, 0) == " | -2"
+    assert gds.parse_stat_short(" | 10 --", 0, 0) == " |   -2"  # padded to align with minus column
     assert gds.parse_stat_short(" | 0", 0, 0) == " | 0"
     assert gds.parse_stat_short(" | Bin 0 -> 123 bytes", 0, 0) == " | Bin 0 -> 123 bytes"
     print("parse_stat_short: OK")
@@ -140,10 +143,20 @@ def test_short_mode():
     # pw=2 means +N is right-justified to 3 chars (sign + 2 digits)
     assert gds.parse_stat_short(" | 11 ++", 2, 2) == " |  +2"     # ' +2' rjust 3
     assert gds.parse_stat_short(" | 157 " + "+" * 97, 2, 2) == " | +97"
-    assert gds.parse_stat_short(" | 60 --", 2, 2) == " |  -2"     # ' -2' rjust 3
-    assert gds.parse_stat_short(" | 60 " + "-" * 10, 2, 2) == " | -10"
+    assert gds.parse_stat_short(" | 60 --", 2, 2) == " |      -2"  # padded to align minus column
+    assert gds.parse_stat_short(" | 60 " + "-" * 10, 2, 2) == " |     -10"
     assert gds.parse_stat_short(" | 11 +++++--", 2, 2) == " |  +5  -2"  # both aligned
     print("parse_stat_short rjust: OK")
+
+    # Unit: alignment — only-minus minus column matches both-present minus column
+    both  = gds.parse_stat_short(" | 11 +++++--", 2, 2)
+    minus = gds.parse_stat_short(" | 60 --", 2, 2)
+    assert both.index("-") == minus.index("-"), f"minus misaligned: {both!r} vs {minus!r}"
+    print("alignment minus: OK")
+    plus  = gds.parse_stat_short(" | 11 ++", 2, 2)
+    both2 = gds.parse_stat_short(" | 11 +++++--", 2, 2)
+    assert plus.index("+") == both2.index("+"), f"plus misaligned: {plus!r} vs {both2!r}"
+    print("alignment plus: OK")
 
     # Integration: full SHORT output, no bar graphs, all stats present
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -171,6 +184,64 @@ def test_short_mode():
     print("\n=== SHORT mode tests passed ===")
 
 
+def test_counts_first_mode():
+    """Test COUNTS_FIRST mode: counts | status filename with aligned columns."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import git_diff_status as gds
+
+    gds.USE_COLOR = False
+    gds.SHORT = True
+    gds.COUNTS_FIRST = True
+
+    # Unit: format_counts without prefix (for COUNTS_FIRST)
+    assert gds.format_counts(" | 157 +++++----", 2, 2, prefix="") == "  +5  -4"
+    assert gds.format_counts(" | 88 ++", 2, 2, prefix="") == "  +2"
+    assert gds.format_counts(" | 10 --", 2, 2, prefix="") == "      -2"  # padded
+    assert gds.format_counts(" | 0", 0, 0, prefix="") == " 0"
+    print("format_counts: OK")
+
+    # Unit: _counts_width
+    assert gds._counts_width(2, 2) == 1 + 3 + 1 + 3  # leading space + plus + space + minus = 8
+    assert gds._counts_width(2, 0) == 1 + 3  # leading space + plus = 4
+    assert gds._counts_width(0, 2) == 1 + 2 + 3  # leading space + pad(pw+2) + minus = 6
+    assert gds._counts_width(0, 0) == 0
+    print("_counts_width: OK")
+
+    # Unit: alignment — minus in only-minus matches minus in both-present
+    both  = gds.format_counts(" | 11 +++++--", 2, 2, prefix="")
+    minus = gds.format_counts(" | 10 --", 2, 2, prefix="")
+    assert both.index("-") == minus.index("-"), f"minus misaligned: {both!r} vs {minus!r}"
+    print("counts-first alignment: OK")
+
+    # Integration: full COUNTS_FIRST output with divider
+    with tempfile.TemporaryDirectory() as tmpdir:
+        repo_dir = create_test_repo(tmpdir)
+        import git
+        repo = git.Repo(repo_dir)
+        diff_stats, _summary = gds.get_diff_stats(repo)
+        status_items = gds.get_status_items(repo)
+        max_len = gds.get_max_filename_length(diff_stats)
+
+        lines = gds.get_merged_output_lines(status_items, diff_stats.copy(), max_len)
+        assert len(lines) == len(status_items)
+
+        # Every line should have " | " divider between counts and status
+        for line in lines:
+            assert " | " in line, f"missing divider in: {line!r}"
+            # No bar graphs
+            assert "+++" not in line, f"bar graph in: {line}"
+            assert "---" not in line, f"bar graph in: {line}"
+
+        # All lines should have the same prefix length before " | "
+        divider_positions = [line.index(" | ") for line in lines]
+        assert len(set(divider_positions)) == 1, \
+            f"Misaligned dividers: {divider_positions}"
+        print(f"COUNTS_FIRST integration: {len(lines)} lines, all aligned — OK")
+
+    print("\n=== COUNTS_FIRST mode tests passed ===")
+
+
 if __name__ == "__main__":
     test_diff_stat_no_truncation()
     test_short_mode()
+    test_counts_first_mode()

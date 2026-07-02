@@ -29,6 +29,7 @@ def _is_yes(key: str, default: str = "") -> bool:
     return os.environ.get(key, default).lower() in ("1", "yes", "true")
 
 SHORT = _is_yes("GIT_DIFF_STATUS_SHORT", "1")
+COUNTS_FIRST = _is_yes("GIT_DIFF_STATUS_COUNTS_FIRST", "1")
 
 # ANSI color codes
 class Colors:
@@ -197,10 +198,11 @@ def _count_stat_changes(stat_str: str) -> tuple[int, int]:
     return graph.count("+"), graph.count("-")
 
 
-def parse_stat_short(stat_str: str, pw: int = 0, mw: int = 0) -> str:
-    """Convert stat bar (" | 157 +++++----") to compact format (" |  +5  -4").
+def format_counts(stat_str: str, pw: int = 0, mw: int = 0, prefix: str = " |") -> str:
+    """Convert stat bar to compact counts format (e.g. "  +5  -2").
 
     pw, mw: rjust widths for the +N and -N numbers.
+    prefix: leading string, " |" for inline mode, "" for counts-first mode.
     """
     pluses, minuses = _count_stat_changes(stat_str)
 
@@ -208,10 +210,13 @@ def parse_stat_short(stat_str: str, pw: int = 0, mw: int = 0) -> str:
     if stat_str[3:].startswith("Bin"):
         return stat_str
 
-    result = " |"
+    result = prefix
     if pluses > 0:
         result += f" {colorize(f'+{pluses}'.rjust(pw + 1), Colors.GREEN)}"
     if minuses > 0:
+        if pluses == 0:
+            # Pad to align minus column with lines that have both pluses and minuses
+            result += " " * (pw + 2)
         result += f" {colorize(f'-{minuses}'.rjust(mw + 1), Colors.RED)}"
     if pluses == 0 and minuses == 0:
         total = stat_str[3:].split(" ", 1)[0]
@@ -219,11 +224,37 @@ def parse_stat_short(stat_str: str, pw: int = 0, mw: int = 0) -> str:
     return result
 
 
+def parse_stat_short(stat_str: str, pw: int = 0, mw: int = 0) -> str:
+    """Convert stat bar (" | 157 +++++----") to compact format (" |  +5  -4").
+
+    pw, mw: rjust widths for the +N and -N numbers.
+    """
+    return format_counts(stat_str, pw, mw, prefix=" |")
+
+
+def _counts_width(pw: int, mw: int) -> int:
+    """Total width of the counts section for alignment in COUNTS_FIRST mode.
+
+    Returns the width of "  +N  -M" (or the padded equivalent for only-plus / only-minus lines).
+    """
+    if pw == 0 and mw == 0:
+        return 0
+    w = 1  # leading space
+    if pw > 0:
+        w += pw + 1  # space-before + rjust width
+        if mw > 0:
+            w += 1 + mw + 1  # space-before + rjust width
+    else:
+        # Only minuses: need padding to align with minus column of both-present lines
+        w += pw + 2 + mw + 1  # pad + space-before + rjust width
+    return w
+
+
 def get_merged_output_lines(status_items, diff_stats, max_len):
     """Return merged status and diff stats lines, removing matched files from diff_stats."""
     # Pre-compute rjust widths for SHORT mode
     pw = mw = 0
-    if SHORT:
+    if SHORT or COUNTS_FIRST:
         for _code, filename in status_items:
             if filename in diff_stats:
                 p, m = _count_stat_changes(diff_stats[filename])
@@ -231,6 +262,9 @@ def get_merged_output_lines(status_items, diff_stats, max_len):
                     pw = max(pw, len(str(p)))
                 if m > 0:
                     mw = max(mw, len(str(m)))
+
+    if COUNTS_FIRST:
+        return _get_counts_first_lines(status_items, diff_stats, pw, mw)
 
     lines = []
     for status_code, filename in status_items:
@@ -244,6 +278,33 @@ def get_merged_output_lines(status_items, diff_stats, max_len):
             del diff_stats[filename]
         else:
             lines.append(f"{status_colored} {filename}")
+    return lines
+
+
+def _get_counts_first_lines(status_items, diff_stats, pw, mw):
+    """Build output lines in COUNTS_FIRST mode: counts | status filename."""
+    cw = _counts_width(pw, mw)
+
+    lines = []
+    for status_code, filename in status_items:
+        status_colored = format_status_code(status_code)
+
+        if filename in diff_stats:
+            stat = diff_stats[filename]
+            if SHORT:
+                counts = format_counts(stat, pw, mw, prefix="")
+            else:
+                counts = colorize_stat(stat)
+            # Pad counts section to uniform width, then add divider
+            counts_padded = counts.ljust(cw) if cw > 0 else ""
+            lines.append(f"{counts_padded} | {status_colored} {filename}")
+            del diff_stats[filename]
+        else:
+            if cw > 0:
+                padding = " " * (cw + 2)  # width + " |"
+                lines.append(f"{padding} {status_colored} {filename}")
+            else:
+                lines.append(f"{status_colored} {filename}")
     return lines
 
 
