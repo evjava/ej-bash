@@ -24,6 +24,12 @@ except ImportError:
 # Color mode: None = auto (tty-based), True = always, False = never
 USE_COLOR = None
 
+# Short mode: replace stat bar ("157 +++++----") with compact numbers ("157 +5 -4")
+def _is_yes(key: str, default: str = "") -> bool:
+    return os.environ.get(key, default).lower() in ("1", "yes", "true")
+
+SHORT = _is_yes("GIT_DIFF_STATUS_SHORT", "1")
+
 # ANSI color codes
 class Colors:
     RESET = "\033[0m"
@@ -111,7 +117,7 @@ def format_status_code(status_code: str) -> str:
 
 def get_diff_stats(repo) -> tuple[dict, str]:
     """Parse git diff --stat HEAD and return {filename: stat_str} dict and summary line."""
-    diff_output = repo.git.diff("--stat", "HEAD")
+    diff_output = repo.git.diff("--stat=9999,999", "HEAD")
 
     diff_stats = {}
     summary_line = None
@@ -181,18 +187,64 @@ def get_max_filename_length(diff_stats):
     return max((len(fname) for fname in diff_stats.keys()), default=0)
 
 
-def print_merged_output(status_items, diff_stats, max_len):
-    """Print merged status and diff stats, removing matched files from diff_stats."""
+def _count_stat_changes(stat_str: str) -> tuple[int, int]:
+    """Extract (pluses, minuses) counts from a stat string."""
+    inner = stat_str[3:]  # strip " | "
+    if inner.startswith("Bin"):
+        return 0, 0
+    parts = inner.split(" ", 1)
+    graph = parts[1] if len(parts) > 1 else ""
+    return graph.count("+"), graph.count("-")
+
+
+def parse_stat_short(stat_str: str, pw: int = 0, mw: int = 0) -> str:
+    """Convert stat bar (" | 157 +++++----") to compact format (" |  +5  -4").
+
+    pw, mw: rjust widths for the +N and -N numbers.
+    """
+    pluses, minuses = _count_stat_changes(stat_str)
+
+    # Binary files: return as-is
+    if stat_str[3:].startswith("Bin"):
+        return stat_str
+
+    result = " |"
+    if pluses > 0:
+        result += f" {colorize(f'+{pluses}'.rjust(pw + 1), Colors.GREEN)}"
+    if minuses > 0:
+        result += f" {colorize(f'-{minuses}'.rjust(mw + 1), Colors.RED)}"
+    if pluses == 0 and minuses == 0:
+        total = stat_str[3:].split(" ", 1)[0]
+        result += f" {colorize(total, Colors.GRAY)}"
+    return result
+
+
+def get_merged_output_lines(status_items, diff_stats, max_len):
+    """Return merged status and diff stats lines, removing matched files from diff_stats."""
+    # Pre-compute rjust widths for SHORT mode
+    pw = mw = 0
+    if SHORT:
+        for _code, filename in status_items:
+            if filename in diff_stats:
+                p, m = _count_stat_changes(diff_stats[filename])
+                if p > 0:
+                    pw = max(pw, len(str(p)))
+                if m > 0:
+                    mw = max(mw, len(str(m)))
+
+    lines = []
     for status_code, filename in status_items:
         status_colored = format_status_code(status_code)
 
         if filename in diff_stats:
             padding = " " * (max_len - len(filename))
-            stat_colored = colorize_stat(diff_stats[filename])
-            print(f"{status_colored} {filename}{padding}{stat_colored}")
+            stat = diff_stats[filename]
+            stat_colored = parse_stat_short(stat, pw, mw) if SHORT else colorize_stat(stat)
+            lines.append(f"{status_colored} {filename}{padding}{stat_colored}")
             del diff_stats[filename]
         else:
-            print(f"{status_colored} {filename}")
+            lines.append(f"{status_colored} {filename}")
+    return lines
 
 
 def colorize_summary_line(summary_line: str) -> str:
@@ -278,7 +330,8 @@ def main():
     diff_stats = {relpath(k): v for k, v in diff_stats.items()}
 
     max_len = get_max_filename_length(diff_stats)
-    print_merged_output(status_items, diff_stats, max_len)
+    for line in get_merged_output_lines(status_items, diff_stats, max_len):
+        print(line)
 
     if summary_line:
         print(colorize_summary_line(summary_line))
